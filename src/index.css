@@ -261,7 +261,7 @@ a {
   }
 
   /* NAVBAR SCROLL FIX */
-  .navbar {
+  .NavBar {
     display: flex;
     overflow-x: auto;
     white-space: nowrap;
@@ -269,7 +269,7 @@ a {
     padding: 10px;
   }
 
-  .navbar::-webkit-scrollbar {
+  .NavBar::-webkit-scrollbar {
     display: none;
   }
 

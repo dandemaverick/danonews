@@ -21,7 +21,7 @@ import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
 
 /* Layout Components (YOU MUST CREATE THESE FILES) */
-import Navbar from "./components/Navbar";
+import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
 
 /* Scroll to top on route change */

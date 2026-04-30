@@ -1,11 +1,11 @@
 import { Helmet } from "react-helmet-async";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Header from "../components/layout/Header";
-import NavBar from "../components/layout/NavBar";
-import Footer from "../components/layout/Footer";
-import AdSense from "../components/ui/AdSense";
-import Widgets from "../components/ui/Widgets";
+import Header from "../components/Header";
+import NavBar from "../components/NavBar";
+import Footer from "../components/Footer";
+import AdSense from "../components/AdSense";
+import Widgets from "../components/Widgets";
 import { supabase } from "../services/supabase";
 import "../styles/Home.css";
 

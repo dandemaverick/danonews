@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import AdSense from "../components/AdSense";
+import Widgets from "../components/Widgets";
 import { supabase } from "../supabase";
 
 export default function Home() {
@@ -25,194 +26,86 @@ export default function Home() {
   }
 
   const hero = posts[0];
-  const side1 = posts[1];
-  const side2 = posts[2];
-  const latest = posts.slice(3, 7);
+  const side = posts.slice(1, 5);
 
   return (
     <>
       <Helmet>
-        <title>DanoNews - Breaking News From Ghana & The World</title>
-        <meta
-          name="description"
-          content="Latest breaking news from Ghana, Africa and the world."
-        />
+        <title>DanoNews - Premium News Platform</title>
       </Helmet>
 
       <Header />
       <NavBar />
 
-      {/* TOP ADS */}
-      <div style={{ maxWidth: "1400px", margin: "15px auto", padding: "0 20px" }}>
-        <AdSense slot="1111111111" />
-      </div>
+      <div style={styles.page}>
 
-      {/* BREAKING BAR */}
-      <div className="ticker">
-        <div className="ticker-title">BREAKING NEWS</div>
-        <marquee>
-          {posts.map((item) => item.title).join(" • ")}
-        </marquee>
-      </div>
-
-      <div className="container homepage">
-
-        {/* HERO SECTION */}
-        <div className="top-layout">
+        {/* HERO */}
+        <div style={styles.heroGrid}>
 
           {/* MAIN HERO */}
-          <div className="hero-left">
-            {hero && (
-              <Link to={`/article/${hero.id}`} className="hero-link">
-                <div
-                  className="hero-main"
-                  style={{
-                    backgroundImage: `url(${hero.image})`
-                  }}
-                >
-                  <div className="overlay">
+          {hero && (
+            <Link to={`/article/${hero.id}`} style={styles.heroMain}>
+              <img src={hero.image} style={styles.heroImg} />
 
-                    {hero.sponsored && (
-                      <span className="gold-badge">
-                        PAID PROMOTION
-                      </span>
-                    )}
+              <div style={styles.overlay}>
+                <span style={styles.badge}>TOP STORY</span>
+                <h1>{hero.title}</h1>
+                <p>{hero.body?.slice(0, 140)}...</p>
+              </div>
+            </Link>
+          )}
 
-                    <span className="badge red">
-                      TOP STORY
-                    </span>
-
-                    <h1>{hero.title}</h1>
-
-                    <p>{hero.body?.slice(0, 130)}...</p>
-                  </div>
+          {/* SIDE */}
+          <div style={styles.sideGrid}>
+            {side.map((item) => (
+              <Link key={item.id} to={`/article/${item.id}`} style={styles.sideCard}>
+                <img src={item.image} />
+                <div>
+                  <small>{item.cat}</small>
+                  <h3>{item.title}</h3>
                 </div>
               </Link>
-            )}
+            ))}
           </div>
 
-          {/* SIDE STORIES */}
-          <div className="hero-middle">
+        </div>
 
-            {side1 && (
-              <Link to={`/article/${side1.id}`} className="mini-link">
-                <div
-                  className="mini-card"
-                  style={{
-                    backgroundImage: `url(${side1.image})`
-                  }}
-                >
-                  <div className="overlay">
+        {/* MAIN CONTENT */}
+        <div style={styles.mainLayout}>
 
-                    {side1.sponsored && (
-                      <span className="gold-badge-small">
-                        SPONSORED
-                      </span>
-                    )}
+          {/* LEFT */}
+          <div>
 
-                    <span className="badge blue">
-                      {side1.cat}
-                    </span>
+            {/* LATEST */}
+            <section style={styles.section}>
+              <h2>Latest News</h2>
 
-                    <h3>{side1.title}</h3>
-                  </div>
-                </div>
-              </Link>
-            )}
+              <div style={styles.grid}>
+                {posts.slice(0, 10).map((item) => (
+                  <Link key={item.id} to={`/article/${item.id}`} style={styles.card}>
+                    <img src={item.image} />
 
-            {side2 && (
-              <Link to={`/article/${side2.id}`} className="mini-link">
-                <div
-                  className="mini-card"
-                  style={{
-                    backgroundImage: `url(${side2.image})`
-                  }}
-                >
-                  <div className="overlay">
+                    <div style={{ padding: "12px" }}>
+                      <small>{item.cat}</small>
+                      <h4>{item.title}</h4>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
 
-                    {side2.sponsored && (
-                      <span className="gold-badge-small">
-                        SPONSORED
-                      </span>
-                    )}
-
-                    <span className="badge green">
-                      {side2.cat}
-                    </span>
-
-                    <h3>{side2.title}</h3>
-                  </div>
-                </div>
-              </Link>
-            )}
+            {/* ADS */}
+            <div style={{ margin: "40px 0" }}>
+              <AdSense slot="3333333333" />
+            </div>
 
           </div>
 
           {/* RIGHT SIDEBAR */}
-          <div className="right-sidebar">
-
-            <div className="widget-box">
-              <h3>Trending Now</h3>
-
-              {posts.slice(0, 5).map((item, index) => (
-                <Link
-                  key={item.id}
-                  to={`/article/${item.id}`}
-                  className="trend-item"
-                >
-                  <span>{index + 1}</span>
-                  {item.title}
-                </Link>
-              ))}
-            </div>
-
-            <div className="widget-box">
-              <AdSense slot="2222222222" />
-            </div>
-
-            <div className="widget-box">
-              <h3>Stay Connected</h3>
-              <p>Facebook</p>
-              <p>Instagram</p>
-              <p>X</p>
-              <p>YouTube</p>
-            </div>
-
-          </div>
-        </div>
-
-        {/* LATEST NEWS */}
-        <section className="section-block">
-          <div className="section-head">
-            <h2>Latest News</h2>
+          <div style={styles.sidebar}>
+            <Widgets />
           </div>
 
-          <div className="four-grid">
-            {latest.map((item) => (
-              <Link
-                key={item.id}
-                to={`/article/${item.id}`}
-                className="news-box"
-              >
-                <img src={item.image} alt="" />
-
-                {item.sponsored && (
-                  <span className="gold-inline">
-                    SPONSORED
-                  </span>
-                )}
-
-                <small>{item.cat}</small>
-
-                <h4>{item.title}</h4>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* INLINE ADS */}
-        <div style={{ margin: "30px 0" }}>
-          <AdSense slot="3333333333" />
         </div>
 
       </div>
@@ -221,3 +114,97 @@ export default function Home() {
     </>
   );
 }
+
+/* STYLES */
+const styles = {
+  page: {
+    maxWidth: "1300px",
+    margin: "auto",
+    padding: "20px"
+  },
+
+  heroGrid: {
+    display: "grid",
+    gridTemplateColumns: "2fr 1fr",
+    gap: "20px"
+  },
+
+  heroMain: {
+    position: "relative",
+    height: "450px",
+    borderRadius: "12px",
+    overflow: "hidden",
+    textDecoration: "none",
+    color: "#fff"
+  },
+
+  heroImg: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    transition: "0.4s"
+  },
+
+  overlay: {
+    position: "absolute",
+    bottom: 0,
+    padding: "25px",
+    background: "linear-gradient(transparent, rgba(0,0,0,0.9))"
+  },
+
+  badge: {
+    background: "#e00000",
+    padding: "6px 12px",
+    fontSize: "12px",
+    fontWeight: "700"
+  },
+
+  sideGrid: {
+    display: "grid",
+    gap: "15px"
+  },
+
+  sideCard: {
+    display: "flex",
+    gap: "10px",
+    textDecoration: "none",
+    color: "#000",
+    background: "#fff",
+    borderRadius: "10px",
+    overflow: "hidden",
+    boxShadow: "0 3px 10px rgba(0,0,0,0.05)"
+  },
+
+  mainLayout: {
+    display: "grid",
+    gridTemplateColumns: "2fr 1fr",
+    gap: "30px",
+    marginTop: "40px"
+  },
+
+  sidebar: {
+    position: "sticky",
+    top: "90px",
+    height: "fit-content"
+  },
+
+  section: {
+    marginBottom: "30px"
+  },
+
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px,1fr))",
+    gap: "20px"
+  },
+
+  card: {
+    textDecoration: "none",
+    color: "#000",
+    borderRadius: "10px",
+    overflow: "hidden",
+    background: "#fff",
+    boxShadow: "0 3px 10px rgba(0,0,0,0.05)",
+    transition: "0.3s"
+  }
+};

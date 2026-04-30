@@ -45,7 +45,7 @@ function ProtectedRoute({ children }) {
 function Layout({ children }) {
   return (
     <>
-      <Navbar />
+      <NavBar />
       <main style={{ minHeight: "80vh", padding: "1rem" }}>
         {children}
       </main>

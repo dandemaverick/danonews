@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "../supabase";
+import { supabase } from "../services/supabase";
 
 export default function Widgets() {
   const [trending, setTrending] = useState([]);

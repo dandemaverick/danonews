@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "../supabase";
+import { supabase } from "../services/supabase";
 
 export default function Dashboard() {
   const [title,setTitle] = useState("");

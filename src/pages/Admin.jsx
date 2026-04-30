@@ -1,8 +1,7 @@
 // src/pages/Admin.jsx
 
 import { useRef, useState } from "react";
-import { supabase } from "../supabase";
-
+import { supabase } from "../services/supabase";
 export default function Admin() {
   const editorRef = useRef(null);
   const fileRef = useRef(null);

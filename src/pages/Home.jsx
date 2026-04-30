@@ -1,12 +1,13 @@
 import { Helmet } from "react-helmet-async";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Header from "../components/Header";
-import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
-import AdSense from "../components/AdSense";
-import Widgets from "../components/Widgets";
-import { supabase } from "../supabase";
+import Header from "../components/layout/Header";
+import NavBar from "../components/layout/NavBar";
+import Footer from "../components/layout/Footer";
+import AdSense from "../components/ui/AdSense";
+import Widgets from "../components/ui/Widgets";
+import { supabase } from "../services/supabase";
+import "../styles/Home.css";
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
@@ -26,7 +27,7 @@ export default function Home() {
   }
 
   const hero = posts[0];
-  const side = posts.slice(1, 5);
+  const side = posts.slice(1, 3);
 
   return (
     <>
@@ -37,75 +38,164 @@ export default function Home() {
       <Header />
       <NavBar />
 
-      <div style={styles.page}>
+      <div className="homepage">
 
-        {/* HERO */}
-        <div style={styles.heroGrid}>
+        {/* HERO SECTION */}
+        <div className="top-layout">
 
           {/* MAIN HERO */}
-          {hero && (
-            <Link to={`/article/${hero.id}`} style={styles.heroMain}>
-              <img src={hero.image} style={styles.heroImg} />
+          <div>
+            {hero && (
+              <Link to={`/article/${hero.id}`}>
+                <div
+                  className="hero-main"
+                  style={{ backgroundImage: `url(${hero.image})` }}
+                >
+                  <div className="overlay">
+                    <span className="badge">TOP STORY</span>
+                    <h1>{hero.title}</h1>
+                    <p>{hero.body?.slice(0, 120)}...</p>
+                  </div>
+                </div>
+              </Link>
+            )}
+          </div>
 
-              <div style={styles.overlay}>
-                <span style={styles.badge}>TOP STORY</span>
-                <h1>{hero.title}</h1>
-                <p>{hero.body?.slice(0, 140)}...</p>
-              </div>
-            </Link>
-          )}
-
-          {/* SIDE */}
-          <div style={styles.sideGrid}>
+          {/* SIDE STORIES */}
+          <div className="hero-middle">
             {side.map((item) => (
-              <Link key={item.id} to={`/article/${item.id}`} style={styles.sideCard}>
-                <img src={item.image} />
-                <div>
-                  <small>{item.cat}</small>
-                  <h3>{item.title}</h3>
+              <Link key={item.id} to={`/article/${item.id}`}>
+                <div
+                  className="mini-card"
+                  style={{ backgroundImage: `url(${item.image})` }}
+                >
+                  <div className="overlay">
+                    <small>{item.cat}</small>
+                    <h3>{item.title}</h3>
+                  </div>
                 </div>
               </Link>
             ))}
           </div>
 
-        </div>
+          {/* RIGHT SIDEBAR */}
+          <div className="right-sidebar">
 
-        {/* MAIN CONTENT */}
-        <div style={styles.mainLayout}>
+            <div className="widget-box">
+              <h3>Trending Now</h3>
 
-          {/* LEFT */}
-          <div>
-
-            {/* LATEST */}
-            <section style={styles.section}>
-              <h2>Latest News</h2>
-
-              <div style={styles.grid}>
-                {posts.slice(0, 10).map((item) => (
-                  <Link key={item.id} to={`/article/${item.id}`} style={styles.card}>
-                    <img src={item.image} />
-
-                    <div style={{ padding: "12px" }}>
-                      <small>{item.cat}</small>
-                      <h4>{item.title}</h4>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-
-            {/* ADS */}
-            <div style={{ margin: "40px 0" }}>
-              <AdSense slot="3333333333" />
+              {posts.slice(0, 5).map((item, i) => (
+                <Link
+                  key={item.id}
+                  to={`/article/${item.id}`}
+                  className="trend-item"
+                >
+                  <span>{i + 1}</span>
+                  {item.title}
+                </Link>
+              ))}
             </div>
 
-          </div>
+            <div className="widget-box">
+              <AdSense slot="2222222222" />
+            </div>
 
-          {/* RIGHT SIDEBAR */}
-          <div style={styles.sidebar}>
             <Widgets />
           </div>
 
+        </div>
+
+        {/* LATEST NEWS */}
+        <section className="section-block">
+          <h2>Latest News</h2>
+
+          <div className="four-grid">
+            {posts.slice(3, 11).map((item) => (
+              <Link
+                key={item.id}
+                to={`/article/${item.id}`}
+                className="news-box"
+              >
+                <img src={item.image} />
+                <small>{item.cat}</small>
+                <h4>{item.title}</h4>
+              </Link>
+            ))}
+          </div>
+        </section>
+{/* CATEGORY SECTIONS */}
+
+{/* SPORTS */}
+<section className="category-block">
+  <div className="section-head">
+    <h2>Sports</h2>
+  </div>
+
+  <div className="category-grid">
+    
+    {/* FEATURE */}
+    {posts
+      .filter(p => p.cat === "sports")
+      .slice(0, 1)
+      .map(item => (
+        <Link key={item.id} to={`/article/${item.id}`} className="category-feature">
+          <img src={item.image} />
+          <h3>{item.title}</h3>
+        </Link>
+      ))}
+
+    {/* LIST */}
+    <div className="category-list">
+      {posts
+        .filter(p => p.cat === "sports")
+        .slice(1, 5)
+        .map(item => (
+          <Link key={item.id} to={`/article/${item.id}`} className="category-item">
+            <img src={item.image} />
+            <p>{item.title}</p>
+          </Link>
+        ))}
+    </div>
+
+  </div>
+</section>
+
+
+{/* POLITICS */}
+<section className="category-block">
+  <div className="section-head">
+    <h2>Politics</h2>
+  </div>
+
+  <div className="category-grid">
+    
+    {posts
+      .filter(p => p.cat === "politics")
+      .slice(0, 1)
+      .map(item => (
+        <Link key={item.id} to={`/article/${item.id}`} className="category-feature">
+          <img src={item.image} />
+          <h3>{item.title}</h3>
+        </Link>
+      ))}
+
+    <div className="category-list">
+      {posts
+        .filter(p => p.cat === "politics")
+        .slice(1, 5)
+        .map(item => (
+          <Link key={item.id} to={`/article/${item.id}`} className="category-item">
+            <img src={item.image} />
+            <p>{item.title}</p>
+          </Link>
+        ))}
+    </div>
+
+  </div>
+</section>
+        {/* INLINE AD */}
+        <div style={{ margin: "40px 0" }}>
+          <AdSense slot="3333333333" />
         </div>
 
       </div>
@@ -114,97 +204,3 @@ export default function Home() {
     </>
   );
 }
-
-/* STYLES */
-const styles = {
-  page: {
-    maxWidth: "1300px",
-    margin: "auto",
-    padding: "20px"
-  },
-
-  heroGrid: {
-    display: "grid",
-    gridTemplateColumns: "2fr 1fr",
-    gap: "20px"
-  },
-
-  heroMain: {
-    position: "relative",
-    height: "450px",
-    borderRadius: "12px",
-    overflow: "hidden",
-    textDecoration: "none",
-    color: "#fff"
-  },
-
-  heroImg: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    transition: "0.4s"
-  },
-
-  overlay: {
-    position: "absolute",
-    bottom: 0,
-    padding: "25px",
-    background: "linear-gradient(transparent, rgba(0,0,0,0.9))"
-  },
-
-  badge: {
-    background: "#e00000",
-    padding: "6px 12px",
-    fontSize: "12px",
-    fontWeight: "700"
-  },
-
-  sideGrid: {
-    display: "grid",
-    gap: "15px"
-  },
-
-  sideCard: {
-    display: "flex",
-    gap: "10px",
-    textDecoration: "none",
-    color: "#000",
-    background: "#fff",
-    borderRadius: "10px",
-    overflow: "hidden",
-    boxShadow: "0 3px 10px rgba(0,0,0,0.05)"
-  },
-
-  mainLayout: {
-    display: "grid",
-    gridTemplateColumns: "2fr 1fr",
-    gap: "30px",
-    marginTop: "40px"
-  },
-
-  sidebar: {
-    position: "sticky",
-    top: "90px",
-    height: "fit-content"
-  },
-
-  section: {
-    marginBottom: "30px"
-  },
-
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(250px,1fr))",
-    gap: "20px"
-  },
-
-  card: {
-    textDecoration: "none",
-    color: "#000",
-    borderRadius: "10px",
-    overflow: "hidden",
-    background: "#fff",
-    boxShadow: "0 3px 10px rgba(0,0,0,0.05)",
-    transition: "0.3s"
-  }
-};

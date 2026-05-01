@@ -2,24 +2,25 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 const NewsContext = createContext();
 
-const API_KEY = "3caa77d07a04533bc8ced8ba887119e";
-const BASE_URL = "https://newsapi.org/v2";
-
-// ⚠️ TEMP proxy (dev only)
-const PROXY = "https://cors-anywhere.herokuapp.com/";
+// ✅ YOUR LIVE BACKEND
+const API_BASE = "https://danonews.onrender.com";
 
 export const NewsProvider = ({ children }) => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // 🔥 GET NEWS
   const fetchNews = async (category = "general") => {
     setLoading(true);
     try {
-      const res = await fetch(
-        `${PROXY}${BASE_URL}/top-headlines?country=us&category=${category}&apiKey=${API_KEY}`
-      );
+      const res = await fetch(`${API_BASE}/api/news`);
       const data = await res.json();
-      setArticles(data.articles || []);
+
+      if (data.status === "ok") {
+        setArticles(data.articles);
+      } else {
+        console.error("API Error:", data);
+      }
     } catch (err) {
       console.error("News fetch error:", err);
     } finally {
@@ -27,15 +28,23 @@ export const NewsProvider = ({ children }) => {
     }
   };
 
+  // 🔍 SEARCH NEWS
   const searchNews = async (query) => {
     if (!query) return;
     setLoading(true);
+
     try {
       const res = await fetch(
-        `${PROXY}${BASE_URL}/everything?q=${query}&apiKey=${API_KEY}`
+        `${API_BASE}/api/search?q=${encodeURIComponent(query)}`
       );
+
       const data = await res.json();
-      setArticles(data.articles || []);
+
+      if (data.status === "ok") {
+        setArticles(data.articles);
+      } else {
+        console.error("Search API Error:", data);
+      }
     } catch (err) {
       console.error("Search error:", err);
     } finally {
@@ -43,8 +52,9 @@ export const NewsProvider = ({ children }) => {
     }
   };
 
+  // 🚀 INITIAL LOAD
   useEffect(() => {
-    fetchNews(); // default load
+    fetchNews();
   }, []);
 
   return (

@@ -12,20 +12,32 @@ import "../styles/Home.css";
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [apiNews, setApiNews] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadPosts();
     fetchNews();
   }, []);
 
-  /* 🔵 FETCH FROM YOUR BACKEND (FIXED) */
+  /* 🔵 FETCH FROM LIVE BACKEND */
   async function fetchNews() {
+    setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/news");
+      const res = await fetch(
+        "https://danonews.onrender.com/api/news"
+      );
+
       const data = await res.json();
-      setApiNews(data.articles || []);
+
+      if (data.status === "ok") {
+        setApiNews(data.articles || []);
+      } else {
+        console.error("API error:", data);
+      }
     } catch (err) {
       console.error("Backend error:", err);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -59,7 +71,6 @@ export default function Home() {
   const trending = merged.slice(0, 5);
   const grid = merged.slice(3, 11);
 
-  /* 🧠 SAFE IMAGE */
   const safeImg = (img) =>
     img || "https://via.placeholder.com/600x400";
 
@@ -74,31 +85,40 @@ export default function Home() {
 
       <div className="homepage">
 
+        {/* 🔥 LOADING STATE */}
+        {loading && (
+          <p style={{ textAlign: "center", padding: "20px" }}>
+            Loading latest news...
+          </p>
+        )}
+
         {/* HERO */}
         <div className="top-layout">
 
           {/* MAIN HERO */}
-          <Link
-            to={`/article/${hero.id}`}
-            state={{ article: hero.isAPI ? hero : null }}
-            onClick={() =>
-              hero.isAPI &&
-              localStorage.setItem("currentArticle", JSON.stringify(hero))
-            }
-          >
-            <div
-              className="hero-main"
-              style={{
-                backgroundImage: `url(${safeImg(hero.image)})`
-              }}
+          {hero && hero.title && (
+            <Link
+              to={`/article/${hero.id}`}
+              state={{ article: hero.isAPI ? hero : null }}
+              onClick={() =>
+                hero.isAPI &&
+                localStorage.setItem("currentArticle", JSON.stringify(hero))
+              }
             >
-              <div className="overlay">
-                <span className="badge">TOP STORY</span>
-                <h1>{hero.title || "No title available"}</h1>
-                <p>{hero.body ? hero.body.slice(0, 120) : ""}</p>
+              <div
+                className="hero-main"
+                style={{
+                  backgroundImage: `url(${safeImg(hero.image)})`
+                }}
+              >
+                <div className="overlay">
+                  <span className="badge">TOP STORY</span>
+                  <h1>{hero.title}</h1>
+                  <p>{hero.body ? hero.body.slice(0, 120) : ""}</p>
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          )}
 
           {/* SIDE */}
           <div className="hero-middle">

@@ -30,3 +30,7 @@ app.get("/api/news", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`🔥 Server running on http://localhost:${PORT}`);
 });
+if (!API_KEY) {
+  console.error("❌ NEWS_API_KEY is missing");
+  process.exit(1);
+}

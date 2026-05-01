@@ -1,24 +1,40 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
 import Header from "../components/Header";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import Widgets from "../components/Widgets";
-import AdSense from "../components/AdSense";
 import { supabase } from "../services/supabase";
 
 export default function Article() {
   const { id } = useParams();
+  const { state } = useLocation();
+  const navigate = useNavigate();
+
   const [post, setPost] = useState(null);
+  const [apiArticle, setApiArticle] = useState(null);
 
   useEffect(() => {
+    // ✅ 1. Try state
+    if (state?.article) {
+      setApiArticle(state.article);
+      return;
+    }
+
+    // ✅ 2. Try localStorage (refresh fix)
+    const saved = localStorage.getItem("currentArticle");
+    if (saved) {
+      setApiArticle(JSON.parse(saved));
+      return;
+    }
+
+    // ✅ 3. Fallback to DB
     loadPost();
     incrementViews();
   }, [id]);
 
-  /* LOAD POST */
   async function loadPost() {
     const { data } = await supabase
       .from("posts")
@@ -29,201 +45,185 @@ export default function Article() {
     if (data) setPost(data);
   }
 
-  /* ✅ TRACK VIEWS (PRO VERSION) */
   async function incrementViews() {
     const viewedKey = `viewed_${id}`;
-
-    // prevent duplicate views per session
     if (sessionStorage.getItem(viewedKey)) return;
 
     sessionStorage.setItem(viewedKey, "true");
 
-    // use RPC (fast + safe)
     await supabase.rpc("increment_views", {
       post_id: id
     });
   }
 
-  if (!post) {
+  /* =========================
+     🟡 API ARTICLE (PREMIUM UI)
+  ========================== */
+  if (apiArticle) {
+    const image =
+      apiArticle.urlToImage || "https://via.placeholder.com/1200x600";
+
     return (
-      <div style={{ padding: "50px", fontSize: "22px" }}>
-        Loading article...
+      <div className="site-shell">
+        <Header />
+        <NavBar />
+
+        <div style={styles.container}>
+          <Helmet>
+            <title>{apiArticle.title} | DanoNews</title>
+          </Helmet>
+
+          {/* HERO IMAGE */}
+          <div style={styles.hero}>
+            <img
+              src={image}
+              onError={(e) =>
+                (e.target.src = "https://via.placeholder.com/1200x600")
+              }
+            />
+          </div>
+
+          {/* CONTENT */}
+          <div style={styles.content}>
+            <h1 style={styles.title}>{apiArticle.title}</h1>
+
+            <div style={styles.meta}>
+              <span>{apiArticle.source?.name}</span>
+              <span>•</span>
+              <span>
+                {new Date(apiArticle.publishedAt).toDateString()}
+              </span>
+            </div>
+
+            <p style={styles.lead}>
+              {apiArticle.description}
+            </p>
+
+            <div style={styles.body}>
+              {apiArticle.content || apiArticle.description}
+            </div>
+
+            <a
+              href={apiArticle.url}
+              target="_blank"
+              style={styles.readMore}
+            >
+              Continue reading on source →
+            </a>
+
+            <button style={styles.backBtn} onClick={() => navigate(-1)}>
+              ← Back
+            </button>
+          </div>
+        </div>
+
+        <Footer />
       </div>
     );
   }
 
-  const rawText = post.content || post.body || "";
+  /* =========================
+     🔵 DATABASE ARTICLE
+  ========================== */
 
-  const cleanText = rawText
-    .replace(/<[^>]*>/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  if (!post) {
+    return <h2 style={{ padding: "40px" }}>Loading...</h2>;
+  }
 
-  const paragraphs = rawText
-    .split("\n")
-    .filter((p) => p.trim() !== "");
+  const rawText = post.content || "";
+  const paragraphs = rawText.split("\n").filter(p => p.trim());
 
   const imageUrl =
-    post.image_url ||
-    post.image ||
-    "https://picsum.photos/900/500?news";
+    post.image_url || "https://picsum.photos/1200/600";
 
   return (
     <div className="site-shell">
-
-      {/* SEO */}
-      <Helmet>
-        <title>{post.title} | DanoNews</title>
-        <meta name="description" content={cleanText.slice(0, 160)} />
-        <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={cleanText.slice(0, 160)} />
-        <meta property="og:image" content={imageUrl} />
-        <meta property="og:type" content="article" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={post.title} />
-        <meta name="twitter:description" content={cleanText.slice(0, 160)} />
-        <meta name="twitter:image" content={imageUrl} />
-      </Helmet>
-
       <Header />
       <NavBar />
 
-      {/* TOP AD */}
-      <div style={{ maxWidth: "1400px", margin: "18px auto", padding: "0 20px" }}>
-        <AdSense slot="4444444444" />
-      </div>
+      <div style={styles.container}>
+        <div style={styles.hero}>
+          <img src={imageUrl} />
+        </div>
 
-      <div className="breaking-bar">
-        <span>FULL STORY</span>
-        <marquee>
-          DanoNews trusted reporting • Stay informed • Breaking updates daily
-        </marquee>
-      </div>
+        <div style={styles.content}>
+          <h1 style={styles.title}>{post.title}</h1>
 
-      <main className="homepage-grid">
-        <section className="main-content">
+          <p style={styles.meta}>
+            👁 {post.views || 0} views
+          </p>
 
-          {/* IMAGE */}
-          <article className="hero-card">
-            <img src={imageUrl} alt={post.title} />
-          </article>
-
-          {/* CONTENT */}
-          <section className="news-strip">
-
-            {/* SPONSORED */}
-            {post.sponsored && (
-              <div style={styles.sponsored}>
-                Sponsored Content • Paid Promotion
-              </div>
-            )}
-
-            <h1 style={styles.title}>{post.title}</h1>
-
-            {/* ✅ NEW: VIEW COUNT */}
-            <p style={styles.views}>
-              👁 {post.views || 0} views
-            </p>
-
-            <div style={styles.articleBox}>
-              {paragraphs.length > 0 ? (
-                paragraphs.map((para, index) => (
-                  <div key={index}>
-                    <p>{para}</p>
-
-                    {index === 1 && (
-                      <div style={{ margin: "28px 0" }}>
-                        <AdSense slot="5555555555" />
-                      </div>
-                    )}
-
-                    {index === 4 && (
-                      <div style={{ margin: "28px 0" }}>
-                        <AdSense slot="6666666666" />
-                      </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <p>{cleanText}</p>
-              )}
-
-              <div style={{ marginTop: "35px" }}>
-                <AdSense slot="7777777777" />
-              </div>
-
-              <hr style={styles.hr} />
-
-              <p><strong>Source:</strong> DanoNews Editorial Desk</p>
-              <p><strong>Published:</strong> Today</p>
-
-              {post.sponsored && (
-                <p style={styles.sponsoredText}>
-                  This article contains paid promotional content.
-                </p>
-              )}
-            </div>
-          </section>
-        </section>
-
-        {/* SIDEBAR */}
-        <aside>
-          <Widgets />
-
-          <div style={{ marginTop: "20px" }}>
-            <AdSense slot="8888888888" />
+          <div style={styles.body}>
+            {paragraphs.map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
           </div>
-        </aside>
-      </main>
+        </div>
+      </div>
 
       <Footer />
     </div>
   );
 }
 
-/* STYLES */
+/* 🎨 PREMIUM STYLES */
 const styles = {
-  title: {
-    fontSize: "42px",
-    margin: "10px 0 10px",
-    lineHeight: "1.2"
+  container: {
+    maxWidth: "1000px",
+    margin: "auto",
+    padding: "20px"
   },
 
-  views: {
-    fontSize: "14px",
-    opacity: 0.6,
+  hero: {
+    marginBottom: "20px"
+  },
+
+  content: {
+    background: "#fff",
+    padding: "30px",
+    borderRadius: "14px",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.08)"
+  },
+
+  title: {
+    fontSize: "42px",
+    lineHeight: "1.2",
     marginBottom: "15px"
   },
 
-  articleBox: {
-    background: "#fff",
-    padding: "32px",
-    borderRadius: "14px",
-    lineHeight: "1.95",
-    fontSize: "19px",
-    boxShadow: "0 10px 24px rgba(0,0,0,.06)"
+  meta: {
+    display: "flex",
+    gap: "10px",
+    fontSize: "14px",
+    color: "#777",
+    marginBottom: "20px"
   },
 
-  hr: {
-    margin: "30px 0",
+  lead: {
+    fontSize: "20px",
+    fontWeight: "500",
+    marginBottom: "20px"
+  },
+
+  body: {
+    fontSize: "18px",
+    lineHeight: "1.8"
+  },
+
+  readMore: {
+    display: "block",
+    marginTop: "30px",
+    color: "#e00000",
+    fontWeight: "bold"
+  },
+
+  backBtn: {
+    marginTop: "20px",
+    padding: "10px 15px",
     border: "none",
-    borderTop: "1px solid #eee"
-  },
-
-  sponsored: {
-    background: "#fff6d6",
-    color: "#8a6500",
-    padding: "14px 18px",
-    borderRadius: "10px",
-    fontWeight: "800",
-    marginTop: "20px",
-    marginBottom: "20px",
-    border: "1px solid #f0d46a"
-  },
-
-  sponsoredText: {
-    marginTop: "20px",
-    color: "#8a6500",
-    fontWeight: "700"
+    background: "#000",
+    color: "#fff",
+    borderRadius: "6px",
+    cursor: "pointer"
   }
 };

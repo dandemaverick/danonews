@@ -11,23 +11,57 @@ import "../styles/Home.css";
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
+  const [apiNews, setApiNews] = useState([]);
 
   useEffect(() => {
     loadPosts();
+    fetchNews();
   }, []);
 
+  /* 🔵 FETCH FROM YOUR BACKEND (FIXED) */
+  async function fetchNews() {
+    try {
+      const res = await fetch("http://localhost:5000/api/news");
+      const data = await res.json();
+      setApiNews(data.articles || []);
+    } catch (err) {
+      console.error("Backend error:", err);
+    }
+  }
+
+  /* 🟢 LOAD SUPABASE */
   async function loadPosts() {
     const { data } = await supabase
       .from("posts")
       .select("*")
       .order("id", { ascending: false })
-      .limit(30);
+      .limit(20);
 
     if (data) setPosts(data);
   }
 
-  const hero = posts[0];
-  const side = posts.slice(1, 3);
+  /* 🔥 MERGE DATA */
+  const merged = [
+    ...apiNews.map((a, i) => ({
+      id: `api-${i}`,
+      title: a.title,
+      body: a.description,
+      image: a.urlToImage,
+      url: a.url,
+      source: a.source?.name,
+      isAPI: true
+    })),
+    ...posts
+  ];
+
+  const hero = merged.length > 0 ? merged[0] : {};
+  const side = merged.slice(1, 3);
+  const trending = merged.slice(0, 5);
+  const grid = merged.slice(3, 11);
+
+  /* 🧠 SAFE IMAGE */
+  const safeImg = (img) =>
+    img || "https://via.placeholder.com/600x400";
 
   return (
     <>
@@ -40,37 +74,51 @@ export default function Home() {
 
       <div className="homepage">
 
-        {/* HERO SECTION */}
+        {/* HERO */}
         <div className="top-layout">
 
           {/* MAIN HERO */}
-          <div>
-            {hero && (
-              <Link to={`/article/${hero.id}`}>
-                <div
-                  className="hero-main"
-                  style={{ backgroundImage: `url(${hero.image})` }}
-                >
-                  <div className="overlay">
-                    <span className="badge">TOP STORY</span>
-                    <h1>{hero.title}</h1>
-                    <p>{hero.body?.slice(0, 120)}...</p>
-                  </div>
-                </div>
-              </Link>
-            )}
-          </div>
+          <Link
+            to={`/article/${hero.id}`}
+            state={{ article: hero.isAPI ? hero : null }}
+            onClick={() =>
+              hero.isAPI &&
+              localStorage.setItem("currentArticle", JSON.stringify(hero))
+            }
+          >
+            <div
+              className="hero-main"
+              style={{
+                backgroundImage: `url(${safeImg(hero.image)})`
+              }}
+            >
+              <div className="overlay">
+                <span className="badge">TOP STORY</span>
+                <h1>{hero.title || "No title available"}</h1>
+                <p>{hero.body ? hero.body.slice(0, 120) : ""}</p>
+              </div>
+            </div>
+          </Link>
 
-          {/* SIDE STORIES */}
+          {/* SIDE */}
           <div className="hero-middle">
             {side.map((item) => (
-              <Link key={item.id} to={`/article/${item.id}`}>
+              <Link
+                key={item.id}
+                to={`/article/${item.id}`}
+                state={{ article: item.isAPI ? item : null }}
+                onClick={() =>
+                  item.isAPI &&
+                  localStorage.setItem("currentArticle", JSON.stringify(item))
+                }
+              >
                 <div
                   className="mini-card"
-                  style={{ backgroundImage: `url(${item.image})` }}
+                  style={{
+                    backgroundImage: `url(${safeImg(item.image)})`
+                  }}
                 >
                   <div className="overlay">
-                    <small>{item.cat}</small>
                     <h3>{item.title}</h3>
                   </div>
                 </div>
@@ -78,16 +126,17 @@ export default function Home() {
             ))}
           </div>
 
-          {/* RIGHT SIDEBAR */}
+          {/* SIDEBAR */}
           <div className="right-sidebar">
 
             <div className="widget-box">
-              <h3>Trending Now</h3>
+              <h3>Trending</h3>
 
-              {posts.slice(0, 5).map((item, i) => (
+              {trending.map((item, i) => (
                 <Link
                   key={item.id}
                   to={`/article/${item.id}`}
+                  state={{ article: item.isAPI ? item : null }}
                   className="trend-item"
                 >
                   <span>{i + 1}</span>
@@ -102,98 +151,39 @@ export default function Home() {
 
             <Widgets />
           </div>
-
         </div>
 
-        {/* LATEST NEWS */}
+        {/* GRID */}
         <section className="section-block">
           <h2>Latest News</h2>
 
           <div className="four-grid">
-            {posts.slice(3, 11).map((item) => (
+            {grid.map((item) => (
               <Link
                 key={item.id}
                 to={`/article/${item.id}`}
+                state={{ article: item.isAPI ? item : null }}
                 className="news-box"
+                onClick={() =>
+                  item.isAPI &&
+                  localStorage.setItem("currentArticle", JSON.stringify(item))
+                }
               >
-                <img src={item.image} />
-                <small>{item.cat}</small>
+                <img
+                  src={safeImg(item.image)}
+                  onError={(e) =>
+                    (e.target.src =
+                      "https://via.placeholder.com/300")
+                  }
+                />
+                <small>{item.source || item.cat}</small>
                 <h4>{item.title}</h4>
               </Link>
             ))}
           </div>
         </section>
-{/* CATEGORY SECTIONS */}
 
-{/* SPORTS */}
-<section className="category-block">
-  <div className="section-head">
-    <h2>Sports</h2>
-  </div>
-
-  <div className="category-grid">
-    
-    {/* FEATURE */}
-    {posts
-      .filter(p => p.cat === "sports")
-      .slice(0, 1)
-      .map(item => (
-        <Link key={item.id} to={`/article/${item.id}`} className="category-feature">
-          <img src={item.image} />
-          <h3>{item.title}</h3>
-        </Link>
-      ))}
-
-    {/* LIST */}
-    <div className="category-list">
-      {posts
-        .filter(p => p.cat === "sports")
-        .slice(1, 5)
-        .map(item => (
-          <Link key={item.id} to={`/article/${item.id}`} className="category-item">
-            <img src={item.image} />
-            <p>{item.title}</p>
-          </Link>
-        ))}
-    </div>
-
-  </div>
-</section>
-
-
-{/* POLITICS */}
-<section className="category-block">
-  <div className="section-head">
-    <h2>Politics</h2>
-  </div>
-
-  <div className="category-grid">
-    
-    {posts
-      .filter(p => p.cat === "politics")
-      .slice(0, 1)
-      .map(item => (
-        <Link key={item.id} to={`/article/${item.id}`} className="category-feature">
-          <img src={item.image} />
-          <h3>{item.title}</h3>
-        </Link>
-      ))}
-
-    <div className="category-list">
-      {posts
-        .filter(p => p.cat === "politics")
-        .slice(1, 5)
-        .map(item => (
-          <Link key={item.id} to={`/article/${item.id}`} className="category-item">
-            <img src={item.image} />
-            <p>{item.title}</p>
-          </Link>
-        ))}
-    </div>
-
-  </div>
-</section>
-        {/* INLINE AD */}
+        {/* AD */}
         <div style={{ margin: "40px 0" }}>
           <AdSense slot="3333333333" />
         </div>

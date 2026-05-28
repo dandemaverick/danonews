@@ -249,7 +249,7 @@ app.get(
       }
 
       const url =
-        `https://gnews.io/api/v4/top-headlines?category=${category}&lang=en&country=gh&max=${limit}&page=${page}&apikey=${GNEWS_API_KEY}`;
+      https://gnews.io/api/v4/top-headlines?country=gh&lang=en&max=20&category=${category}&apikey=${process.env.GNEWS_API_KEY}
 
       const result =
         await fetchNews(url);

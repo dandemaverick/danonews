@@ -6,7 +6,9 @@ export default function Article() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const article = location.state?.article;
+  const article =
+  location.state?.article ||
+  JSON.parse(localStorage.getItem("currentArticle"));
 
   // Redirect if article missing
   if (!article) {

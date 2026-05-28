@@ -90,7 +90,16 @@ export default function Sports() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-2xl font-semibold">
+      <div
+        style={{
+          minHeight: "70vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "28px",
+          fontWeight: "bold",
+        }}
+      >
         Loading Sports News...
       </div>
     );
@@ -100,94 +109,205 @@ export default function Sports() {
   const latest = posts.slice(1);
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div style={{ background: "#f3f4f6", minHeight: "100vh" }}>
 
-      {/* TOP STRIP */}
-      <div className="bg-red-600 text-white py-3 text-center font-semibold tracking-wide">
+      {/* TOP BAR */}
+      <div
+        style={{
+          background: "#dc2626",
+          color: "white",
+          padding: "14px",
+          textAlign: "center",
+          fontWeight: "bold",
+          letterSpacing: "0.5px",
+        }}
+      >
         SPORTS LIVE • Black Stars • Premier League • Transfers
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-10 w-full">
+      {/* MAIN CONTAINER */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "1200px",
+          margin: "0 auto",
+          padding: "40px 20px",
+        }}
+      >
 
-        {/* HERO SECTION */}
+        {/* HERO */}
         {hero && (
           <div
             onClick={() => openArticle(hero)}
-            className="relative rounded-3xl overflow-hidden cursor-pointer mb-14 shadow-xl mx-auto max-w-6xl"
+            style={{
+              position: "relative",
+              borderRadius: "24px",
+              overflow: "hidden",
+              cursor: "pointer",
+              marginBottom: "50px",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+            }}
           >
             <img
-              src={
-                hero.image_url ||
-                "https://picsum.photos/1200/600?sports"
-              }
+              src={hero.image_url}
               alt={hero.title}
-              className="w-full h-[500px] object-cover"
+              style={{
+                width: "100%",
+                height: "520px",
+                objectFit: "cover",
+                display: "block",
+              }}
             />
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex items-end">
-              <div className="p-10">
-                <span className="bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold">
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.1))",
+                display: "flex",
+                alignItems: "flex-end",
+              }}
+            >
+              <div style={{ padding: "40px" }}>
+                <span
+                  style={{
+                    background: "#dc2626",
+                    color: "white",
+                    padding: "8px 18px",
+                    borderRadius: "50px",
+                    fontWeight: "bold",
+                    fontSize: "14px",
+                  }}
+                >
                   SPORTS
                 </span>
 
-                <h1 className="text-4xl md:text-5xl font-extrabold text-white mt-5 max-w-4xl leading-tight">
+                <h1
+                  style={{
+                    color: "white",
+                    fontSize: "48px",
+                    marginTop: "20px",
+                    lineHeight: "1.2",
+                    maxWidth: "850px",
+                    fontWeight: "800",
+                  }}
+                >
                   {hero.title}
                 </h1>
 
-                <p className="text-gray-200 mt-4 max-w-2xl text-lg">
-                  {hero.content?.slice(0, 140)}...
+                <p
+                  style={{
+                    color: "#e5e7eb",
+                    marginTop: "18px",
+                    fontSize: "18px",
+                    maxWidth: "700px",
+                  }}
+                >
+                  {hero.content}
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* SECTION TITLE */}
-        <div className="flex items-center mb-8 max-w-6xl mx-auto">
-          <div className="w-2 h-10 bg-red-600 mr-4 rounded-full"></div>
+        {/* TITLE */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "30px",
+          }}
+        >
+          <div
+            style={{
+              width: "6px",
+              height: "38px",
+              background: "#dc2626",
+              borderRadius: "10px",
+              marginRight: "14px",
+            }}
+          ></div>
 
-          <h2 className="text-3xl font-bold text-gray-900">
+          <h2
+            style={{
+              fontSize: "36px",
+              fontWeight: "800",
+              color: "#111827",
+            }}
+          >
             Latest Sports News
           </h2>
         </div>
 
-        {/* NEWS GRID */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-
+        {/* GRID */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gap: "30px",
+          }}
+        >
           {latest.map((post) => (
             <div
               key={post.id}
               onClick={() => openArticle(post)}
-              className="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition duration-300 cursor-pointer group"
+              style={{
+                background: "white",
+                borderRadius: "22px",
+                overflow: "hidden",
+                cursor: "pointer",
+                boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+                transition: "0.3s",
+              }}
             >
-              <div className="overflow-hidden">
-                <img
-                  src={
-                    post.image_url ||
-                    "https://picsum.photos/600/400?football"
-                  }
-                  alt={post.title}
-                  className="w-full h-60 object-cover group-hover:scale-110 transition duration-500"
-                />
-              </div>
+              <img
+                src={post.image_url}
+                alt={post.title}
+                style={{
+                  width: "100%",
+                  height: "240px",
+                  objectFit: "cover",
+                }}
+              />
 
-              <div className="p-6">
-                <h3 className="font-bold text-xl leading-tight group-hover:text-red-600 transition">
+              <div style={{ padding: "24px" }}>
+                <h3
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: "700",
+                    lineHeight: "1.4",
+                    color: "#111827",
+                    marginBottom: "14px",
+                  }}
+                >
                   {post.title}
                 </h3>
 
-                <p className="text-gray-600 mt-4 line-clamp-3">
+                <p
+                  style={{
+                    color: "#6b7280",
+                    lineHeight: "1.7",
+                    fontSize: "16px",
+                  }}
+                >
                   {post.content}
                 </p>
 
-                <button className="mt-5 text-red-600 font-semibold">
+                <div
+                  style={{
+                    marginTop: "20px",
+                    color: "#dc2626",
+                    fontWeight: "bold",
+                  }}
+                >
                   Read More →
-                </button>
+                </div>
               </div>
             </div>
           ))}
-
         </div>
+
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import "./article.css";
+import "./Article.css";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Article() {

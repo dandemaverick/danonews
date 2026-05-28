@@ -1,83 +1,159 @@
 import { useEffect, useState } from "react";
-import Header from "../components/Header";
-import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
-import Widgets from "../components/Widgets";
 import { supabase } from "../services/supabase";
 
 export default function Business() {
+
   const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadBusiness();
   }, []);
 
   async function loadBusiness() {
-    const { data } = await supabase
+
+    const { data, error } = await supabase
       .from("posts")
       .select("*")
       .or(
-        "title.ilike.%business%,title.ilike.%economy%,title.ilike.%market%,title.ilike.%bank%,title.ilike.%finance%,title.ilike.%trade%"
+        "title.ilike.%business%,title.ilike.%economy%,title.ilike.%market%,title.ilike.%cedi%"
       )
       .order("id", { ascending: false })
       .limit(12);
 
-    if (data) setPosts(data);
+    if (!error && data) {
+      setPosts(data);
+    }
+
+    setLoading(false);
+  }
+
+  if (loading) {
+    return (
+      <div className="text-center py-24 text-xl font-semibold text-gray-600">
+        Loading Business News...
+      </div>
+    );
   }
 
   const hero = posts[0];
-  const others = posts.slice(1);
+  const latest = posts.slice(1);
 
   return (
-    <div className="site-shell">
-      <Header />
-      <NavBar />
+    <div className="bg-[#f4f6f9] min-h-screen">
 
-      <div className="breaking-bar">
-        <span>BUSINESS LIVE</span>
-        <marquee>
-          Cedi exchange updates • Fuel prices • Stock market moves • Bank rates • Corporate headlines
-        </marquee>
+      {/* TOP BAR */}
+      <div className="bg-red-600 text-white py-3 text-center font-semibold tracking-wide">
+        BUSINESS LIVE • Economy • Markets • Cedi • Trade
       </div>
 
-      <main className="homepage-grid">
-        <section className="main-content">
-          {hero && (
-            <article className="hero-card">
-              <img
-                src={hero.image_url || "https://picsum.photos/900/500?business"}
-                alt=""
-              />
-              <div className="overlay">
-                <h1>{hero.title}</h1>
-                <p>{hero.content}</p>
-              </div>
-            </article>
-          )}
+      {/* MAIN CONTENT */}
+      <div className="max-w-7xl mx-auto px-4 py-10">
 
-          <div className="card-row">
-            {others.map((post) => (
-              <article className="news-card" key={post.id}>
+        {/* HERO SECTION */}
+        {hero && (
+
+          <div
+            className="mb-14 relative rounded-3xl overflow-hidden shadow-2xl cursor-pointer group"
+            onClick={() =>
+              window.location.href =
+                `/article/${hero.title.toLowerCase().replace(/\s+/g, "-")}`
+            }
+          >
+
+            <img
+              src={
+                hero.image_url ||
+                "https://picsum.photos/1200/600?economy"
+              }
+              alt={hero.title}
+              className="w-full h-[500px] object-cover group-hover:scale-105 transition duration-500"
+            />
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+
+            <div className="absolute bottom-0 left-0 p-10">
+
+              <span className="bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold">
+                BUSINESS
+              </span>
+
+              <h1 className="text-5xl font-bold text-white mt-5 leading-tight max-w-4xl">
+                {hero.title}
+              </h1>
+
+            </div>
+
+          </div>
+
+        )}
+
+        {/* SECTION TITLE */}
+        <div className="flex items-center mb-8">
+
+          <div className="w-1 h-10 bg-red-600 rounded-full mr-4"></div>
+
+          <h2 className="text-4xl font-bold text-[#071a52]">
+            Latest Business News
+          </h2>
+
+        </div>
+
+        {/* ARTICLES GRID */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+
+          {latest.map((post) => (
+
+            <div
+              key={post.id}
+              className="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition duration-300 cursor-pointer group"
+              onClick={() =>
+                window.location.href =
+                  `/article/${post.title.toLowerCase().replace(/\s+/g, "-")}`
+              }
+            >
+
+              <div className="overflow-hidden">
+
                 <img
                   src={
                     post.image_url ||
-                    "https://picsum.photos/400/220?finance"
+                    "https://picsum.photos/600/380?business"
                   }
-                  alt=""
+                  alt={post.title}
+                  className="w-full h-64 object-cover group-hover:scale-110 transition duration-500"
                 />
-                <h3>{post.title}</h3>
-                <p>{post.content?.slice(0, 90)}...</p>
-              </article>
-            ))}
-          </div>
-        </section>
 
-        <aside>
-          <Widgets />
-        </aside>
-      </main>
+              </div>
 
-      <Footer />
+              <div className="p-6">
+
+                <span className="inline-block bg-[#071a52] text-white text-xs px-3 py-1 rounded-full mb-4">
+                  BUSINESS
+                </span>
+
+                <h3 className="font-bold text-2xl leading-snug text-[#071a52] group-hover:text-red-600 transition">
+                  {post.title}
+                </h3>
+
+                <p className="text-gray-600 mt-4 leading-7 line-clamp-3">
+                  {post.content || "Read full business coverage on DanoNews."}
+                </p>
+
+                <p className="text-sm text-gray-500 mt-5">
+                  DanoNews Business Desk
+                </p>
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </div>
+
     </div>
   );
 }

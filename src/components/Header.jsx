@@ -1,135 +1,126 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import "./Header.css";
 
 export default function Header() {
-  const [time, setTime] = useState("");
+  const [currentTime, setCurrentTime] = useState("");
 
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
+
       const options = {
         weekday: "long",
-        year: "numeric",
         month: "long",
-        day: "numeric"
+        day: "numeric",
+        year: "numeric",
       };
-      setTime(now.toLocaleDateString(undefined, options));
+
+      setCurrentTime(
+        now.toLocaleDateString("en-US", options)
+      );
     };
 
     updateTime();
+
     const interval = setInterval(updateTime, 60000);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <header style={styles.header}>
-      <div style={styles.container}>
-        
-        {/* LEFT - DATE */}
-        <div style={styles.left}>
-          <span style={styles.date}>{time}</span>
+    <>
+      {/* TOP BAR */}
+      <div className="top-header">
+
+        <div className="container top-header-content">
+
+          {/* LEFT */}
+          <div className="top-left">
+            <span>{currentTime}</span>
+            <span>📍 Accra, Ghana</span>
+            <span>🌡️ 29°C</span>
+          </div>
+
+          {/* CENTER */}
+          <div className="top-center">
+            <span className="live-badge">LIVE</span>
+
+            <span>
+              Parliament debates 2026 budget amid economic concerns
+            </span>
+          </div>
+
+          {/* RIGHT */}
+          <div className="top-right">
+            <Link to="/about">About</Link>
+            <Link to="/contact">Contact</Link>
+            <Link to="/advertise">Advertise</Link>
+            <Link to="/careers">Careers</Link>
+          </div>
+
         </div>
 
-        {/* CENTER - LOGO */}
-        <div style={styles.center}>
-          <Link to="/" style={styles.logo}>
-            Dano<span style={{ color: "#e00000" }}>News</span>
+      </div>
+
+      {/* MAIN HEADER */}
+      <header className="main-header">
+
+        <div className="container main-header-content">
+
+          {/* LOGO */}
+          <Link to="/" className="logo-area">
+
+            <h1 className="logo-text">
+              <span className="logo-dark">Dano</span>
+              <span className="logo-red">News</span>
+            </h1>
+
+            <p className="logo-slogan">
+              CREDIBLE NEWS WITHOUT BORDERS
+            </p>
+
           </Link>
-        </div>
 
-        {/* RIGHT - ACTIONS */}
-        <div style={styles.right}>
-          <button style={styles.subscribe}>Subscribe</button>
-        </div>
-      </div>
+          {/* SEARCH */}
+          <div className="search-area">
 
-      {/* BREAKING NEWS BAR */}
-      <div style={styles.breakingBar}>
-        <span style={styles.breakingLabel}>BREAKING</span>
-        <span style={styles.breakingText}>
-          Latest updates from around the world — stay informed with DanoNews
-        </span>
-      </div>
-    </header>
+            <input
+              type="text"
+              placeholder="Search DanoNews..."
+            />
+
+            <button>
+              🔍
+            </button>
+
+          </div>
+
+          {/* LIVE TV */}
+          <button className="live-tv-btn">
+            LIVE TV
+          </button>
+
+        </div>
+        {/* NAVBAR */}
+<nav className="nav-menu">
+
+  <div className="container nav-links">
+
+    <Link to="/">NEWS</Link>
+    <Link to="/politics">POLITICS</Link>
+    <Link to="/business">BUSINESS</Link>
+    <Link to="/sports">SPORTS</Link>
+    <Link to="/entertainment">ENTERTAINMENT</Link>
+    <Link to="/lifestyle">LIFESTYLE</Link>
+    <Link to="/world">WORLD</Link>
+    <Link to="/videos">VIDEOS</Link>
+
+  </div>
+
+</nav>
+
+      </header>
+    </>
   );
 }
-
-/* STYLES */
-const styles = {
-  header: {
-    background: "#ffffff",
-    borderBottom: "1px solid #e5e7eb"
-  },
-
-  container: {
-    maxWidth: "1300px",
-    margin: "auto",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "10px 20px",
-    flexWrap: "wrap"
-  },
-
-  left: {
-    fontSize: "13px",
-    color: "#64748b"
-  },
-
-  date: {
-    fontWeight: "500"
-  },
-
-  center: {
-    textAlign: "center"
-  },
-
-  logo: {
-    fontSize: "28px",
-    fontWeight: "900",
-    textDecoration: "none",
-    color: "#020617",
-    letterSpacing: "1px"
-  },
-
-  right: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px"
-  },
-
-  subscribe: {
-    background: "#e00000",
-    color: "#fff",
-    border: "none",
-    padding: "8px 14px",
-    borderRadius: "4px",
-    fontWeight: "600",
-    cursor: "pointer"
-  },
-
-  breakingBar: {
-    background: "#020617",
-    color: "#fff",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "8px 20px",
-    fontSize: "14px",
-    overflow: "hidden"
-  },
-
-  breakingLabel: {
-    background: "#e00000",
-    padding: "4px 8px",
-    fontWeight: "700",
-    fontSize: "12px"
-  },
-
-  breakingText: {
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis"
-  }
-};

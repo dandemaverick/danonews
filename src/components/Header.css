@@ -1,0 +1,162 @@
+.top-header {
+  background: #071a52;
+  color: white;
+  font-size: 13px;
+  padding: 10px 0;
+}
+
+.top-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.top-left,
+.top-center,
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.top-right a {
+  color: white;
+  font-size: 13px;
+}
+
+.live-badge {
+  background: red;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.main-header {
+  background: white;
+  border-bottom: 1px solid #ddd;
+}
+
+.main-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  gap: 20px;
+}
+
+.logo-text {
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.logo-dark {
+  color: #071a52;
+}
+
+.logo-red {
+  color: red;
+}
+
+.logo-slogan {
+  font-size: 11px;
+  color: gray;
+  letter-spacing: 2px;
+}
+
+.search-area {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 500px;
+}
+
+.search-area input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-right: none;
+  border-radius: 40px 0 0 40px;
+  outline: none;
+}
+
+.search-area button {
+  padding: 12px 18px;
+  border: none;
+  background: red;
+  color: white;
+  border-radius: 0 40px 40px 0;
+  cursor: pointer;
+}
+
+.live-tv-btn {
+  background: red;
+  color: white;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.nav-menu {
+  background: #071a52;
+}
+
+.nav-links {
+  display: flex;
+  gap: 30px;
+  padding: 15px 0;
+  overflow-x: auto;
+}
+
+.nav-links a {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+
+  .main-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-area {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .top-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+}/* NAVIGATION */
+
+.nav-menu {
+  background: #071a52;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  height: 52px;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: #ff3b30;
+}

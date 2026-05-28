@@ -1,0 +1,172 @@
+.article-page {
+  background: #f4f6f9;
+  min-height: 100vh;
+}
+
+/* HERO */
+
+.article-hero {
+  position: relative;
+  height: 500px;
+  overflow: hidden;
+}
+
+.article-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.article-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+
+  display: flex;
+  align-items: flex-end;
+}
+
+.article-hero-content {
+  max-width: 1200px;
+  margin: auto;
+  width: 100%;
+  padding: 60px 20px;
+}
+
+.article-badge {
+  background: red;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.article-hero h1 {
+  color: white;
+  font-size: 52px;
+  line-height: 1.2;
+  margin-top: 25px;
+  max-width: 900px;
+}
+
+.article-meta {
+  display: flex;
+  gap: 15px;
+  color: rgba(255,255,255,0.8);
+  margin-top: 25px;
+}
+
+/* MAIN */
+
+.article-container {
+  max-width: 1300px;
+  margin: auto;
+  padding: 60px 20px;
+
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 50px;
+}
+
+.article-main {
+  width: 100%;
+}
+
+.article-content {
+  background: white;
+  padding: 50px;
+  border-radius: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.article-content p {
+  font-size: 19px;
+  line-height: 2;
+  color: #333;
+  margin-bottom: 30px;
+}
+
+/* BUTTON */
+
+.source-btn {
+  display: inline-block;
+  margin-top: 20px;
+  background: red;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* SIDEBAR */
+
+.article-sidebar {
+  background: white;
+  padding: 35px;
+  border-radius: 25px;
+  height: fit-content;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.article-sidebar h2 {
+  font-size: 28px;
+  margin-bottom: 30px;
+  color: #071a52;
+}
+
+.related-card {
+  margin-bottom: 35px;
+  cursor: pointer;
+}
+
+.related-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 20px;
+  margin-bottom: 15px;
+}
+
+.related-card h3 {
+  font-size: 20px;
+  line-height: 1.5;
+  color: #071a52;
+}
+
+.related-card:hover h3 {
+  color: red;
+}
+
+/* LOADING */
+
+.article-loading {
+  min-height: 60vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 32px;
+  font-weight: bold;
+}
+
+/* MOBILE */
+
+@media (max-width: 992px) {
+
+.article-container {
+  max-width: 1350px;
+  margin: auto;
+  padding: 70px 20px;
+
+  display: grid;
+  grid-template-columns: 2.1fr 1fr;
+  gap: 60px;
+}
+  .article-hero h1 {
+    font-size: 36px;
+  }
+
+}

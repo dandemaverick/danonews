@@ -1,164 +1,46 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { supabase } from "../services/supabase";
-
 export default function Widgets() {
-  const [trending, setTrending] = useState([]);
-  const [videos, setVideos] = useState([]);
-  const [sponsored, setSponsored] = useState([]);
-
-  useEffect(() => {
-    fetchTrending();
-    fetchVideos();
-    fetchSponsored();
-  }, []);
-
-  /* FETCH TRENDING */
-  async function fetchTrending() {
-    const { data } = await supabase
-      .from("posts")
-      .select("*")
-      .order("views", { ascending: false })
-      .limit(5);
-
-    if (data) setTrending(data);
-  }
-
-  /* FETCH VIDEOS */
-  async function fetchVideos() {
-    const { data } = await supabase
-      .from("posts")
-      .select("*")
-      .eq("type", "video")
-      .limit(1);
-
-    if (data) setVideos(data);
-  }
-
-  /* FETCH SPONSORED */
-  async function fetchSponsored() {
-    const { data } = await supabase
-      .from("posts")
-      .select("*")
-      .eq("sponsored", true)
-      .limit(1);
-
-    if (data) setSponsored(data);
-  }
-
   return (
-    <div style={styles.wrapper}>
-
-      {/* TRENDING */}
-      <div style={styles.widget}>
-        <h3 style={styles.title}>🔥 Trending</h3>
-
-        {trending.map((item, i) => (
-          <Link key={item.id} to={`/article/${item.id}`} style={styles.trendItem}>
-            <span>{i + 1}</span>
-            <p>{item.title}</p>
-          </Link>
-        ))}
-      </div>
-
-      {/* VIDEO */}
-      <div style={styles.widget}>
-        <h3 style={styles.title}>📺 Video News</h3>
-
-        {videos.map((video) => (
-          <Link key={video.id} to={`/article/${video.id}`} style={styles.videoBox}>
-            ▶ {video.title}
-          </Link>
-        ))}
-      </div>
-
-      {/* SOCIAL */}
-      <div style={styles.widget}>
-        <h3 style={styles.title}>🌍 Follow Us</h3>
-
-        <div style={styles.socials}>
-          <a href="#" style={styles.socialItem}>Facebook</a>
-          <a href="#" style={styles.socialItem}>Instagram</a>
-          <a href="#" style={styles.socialItem}>X</a>
-          <a href="#" style={styles.socialItem}>YouTube</a>
+    <div className="space-y-8">
+      {/* Trending */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-6">
+        <h3 className="text-xl font-bold mb-5 flex items-center gap-2">
+          🔥 Trending Now
+        </h3>
+        <div className="space-y-6">
+          {[1,2,3,4].map((i) => (
+            <div key={i} className="flex gap-4 cursor-pointer hover:bg-gray-50 -mx-2 p-2 rounded-xl">
+              <div className="text-3xl font-bold text-gray-200">{i}</div>
+              <div className="text-sm leading-tight">
+                Fuel prices expected to drop significantly next month
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* SPONSORED */}
-      <div style={styles.widget}>
-        <h3 style={styles.title}>Sponsored</h3>
-
-        {sponsored.map((ad) => (
-          <Link key={ad.id} to={`/article/${ad.id}`} style={styles.adBox}>
-            {ad.title}
-          </Link>
-        ))}
+      {/* Newsletter */}
+      <div className="bg-gray-900 text-white p-8 rounded-2xl">
+        <h3 className="text-2xl font-bold mb-3">Newsletter</h3>
+        <p className="text-gray-400 mb-6">Get the day's top stories delivered to your inbox.</p>
+        
+        <input 
+          type="email" 
+          placeholder="Your email address" 
+          className="w-full px-5 py-4 bg-gray-800 border border-gray-700 rounded-xl mb-4 focus:outline-none"
+        />
+        <button className="w-full bg-red-600 hover:bg-red-700 py-4 rounded-xl font-semibold text-lg">
+          Subscribe Now
+        </button>
       </div>
 
+      {/* Advertise */}
+      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-8 rounded-2xl text-center">
+        <h4 className="font-bold text-xl mb-3">Advertise With Us</h4>
+        <p className="text-blue-100 mb-6">Reach thousands of engaged readers daily across Ghana</p>
+        <button className="bg-white text-blue-700 px-8 py-3 rounded-xl font-semibold">
+          Learn More
+        </button>
+      </div>
     </div>
   );
 }
-
-/* STYLES */
-const styles = {
-  wrapper: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px"
-  },
-
-  widget: {
-    background: "#fff",
-    padding: "18px",
-    borderRadius: "10px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.05)"
-  },
-
-  title: {
-    marginBottom: "12px",
-    borderLeft: "4px solid #e00000",
-    paddingLeft: "10px"
-  },
-
-  trendItem: {
-    display: "flex",
-    gap: "10px",
-    textDecoration: "none",
-    color: "#000",
-    marginBottom: "10px"
-  },
-
-  videoBox: {
-    display: "block",
-    background: "#020617",
-    color: "#fff",
-    padding: "20px",
-    borderRadius: "8px",
-    textDecoration: "none"
-  },
-
-  socials: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "10px"
-  },
-
-  socialItem: {
-    background: "#f1f5f9",
-    padding: "10px",
-    textAlign: "center",
-    borderRadius: "6px",
-    textDecoration: "none",
-    color: "#000"
-  },
-
-  adBox: {
-    display: "block",
-    background: "#f8fafc",
-    padding: "25px",
-    textAlign: "center",
-    borderRadius: "8px",
-    textDecoration: "none",
-    color: "#000"
-  }
-};

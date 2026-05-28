@@ -1,0 +1,195 @@
+/* ===================== GLOBAL & HOME PAGE ===================== */
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 2.3fr 1fr;
+  gap: 32px;
+  margin-top: 20px;
+}
+
+.content-left {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* ===================== HERO SECTION ===================== */
+
+.hero-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.hero-story {
+  position: relative;
+  cursor: pointer;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.hero-image-link {
+  height: 460px;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.6s ease;
+}
+
+.hero-story:hover .hero-image-link {
+  transform: scale(1.05);
+}
+
+.hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.3));
+  padding: 32px;
+  color: white;
+}
+
+.badge.red {
+  background: #e63939;
+  color: white;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: bold;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+/* Side Cards */
+.side-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.side-card {
+  height: 210px;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.side-card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+  color: white;
+  padding: 20px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Latest News */
+.section-header h2 {
+  font-size: 28px;
+  font-weight: 800;
+  border-left: 5px solid #e63939;
+  padding-left: 16px;
+  margin-bottom: 20px;
+}
+
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+}
+
+.card-image {
+  height: 200px;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 16px;
+  transition: transform 0.4s ease;
+}
+
+.card:hover .card-image {
+  transform: scale(1.05);
+}
+
+.card-content h3 {
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+/* Sidebar */
+.sidebar-widget {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.sidebar-widget h3 {
+  font-size: 22px;
+  margin-bottom: 18px;
+  border-left: 4px solid #e63939;
+  padding-left: 12px;
+}
+
+.trending-item {
+  display: flex;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.trending-item:hover {
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.trend-number {
+  background: #e63939;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .main-content, .hero-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-image-link {
+    height: 300px;
+  }
+}

@@ -1,95 +1,144 @@
-import Header from "../components/Header";
-import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
-import Widgets from "../components/Widgets";
+import { useState } from "react";
+import "./videos.css";
 
 export default function Videos() {
+  const [selectedVideo, setSelectedVideo] = useState(null);
+
   const videos = [
     {
       id: 1,
-      title: "Breaking News Bulletin",
-      thumb: "https://picsum.photos/600/340?video1",
+      title: "Mahama Unveils 24-Hour Economy Policy",
+      thumb: "https://picsum.photos/800/500?news1",
       embed: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      category: "Politics",
     },
+
     {
       id: 2,
-      title: "Sports Highlights Today",
-      thumb: "https://picsum.photos/600/340?video2",
+      title: "Black Stars Training Session Ahead Of AFCON",
+      thumb: "https://picsum.photos/800/500?sports",
       embed: "https://www.youtube.com/embed/ysz5S6PUM-U",
+      category: "Sports",
     },
+
     {
       id: 3,
-      title: "Business Market Update",
-      thumb: "https://picsum.photos/600/340?video3",
+      title: "Cedi Exchange Rate Update And Market Analysis",
+      thumb: "https://picsum.photos/800/500?economy",
       embed: "https://www.youtube.com/embed/tgbNymZ7vqY",
+      category: "Business",
     },
+
     {
       id: 4,
-      title: "World Headlines Roundup",
-      thumb: "https://picsum.photos/600/340?video4",
-      embed: "https://www.youtube.com/embed/jNQXAC9IVRw",
+      title: "Entertainment Stars Shine At Ghana Music Awards",
+      thumb: "https://picsum.photos/800/500?music",
+      embed: "https://www.youtube.com/embed/kXYiU_JCYtU",
+      category: "Entertainment",
+    },
+
+    {
+      id: 5,
+      title: "Flood Situation Hits Parts Of Accra",
+      thumb: "https://picsum.photos/800/500?flood",
+      embed: "https://www.youtube.com/embed/oHg5SJYRHA0",
+      category: "News",
+    },
+
+    {
+      id: 6,
+      title: "Technology And AI Changing African Journalism",
+      thumb: "https://picsum.photos/800/500?tech",
+      embed: "https://www.youtube.com/embed/ScMzIvxBSi4",
+      category: "Technology",
     },
   ];
 
   return (
-    <div className="site-shell">
-      <Header />
-      <NavBar />
+    <div className="videos-page">
 
-      <div className="breaking-bar">
-        <span>VIDEOS LIVE</span>
-        <marquee>
-          Watch latest reports • Interviews • Sports clips • World updates • Trending moments
-        </marquee>
+      {/* LIVE BAR */}
+      <div className="videos-banner">
+        <div className="videos-banner-content">
+          <span className="live-dot"></span>
+          DANONEWS TV • LIVE REPORTS • BREAKING NEWS • EXCLUSIVE INTERVIEWS
+        </div>
       </div>
 
-      <main className="homepage-grid">
-        <section className="main-content">
-          <article className="hero-card">
+      {/* PAGE HEADER */}
+      <div className="videos-header">
+        <h1>DanoNews Videos</h1>
+
+        <p>
+          Watch breaking news, politics, sports,
+          entertainment and exclusive reports
+          from Ghana and beyond.
+        </p>
+      </div>
+
+      {/* FEATURED VIDEO */}
+      {selectedVideo && (
+        <div className="featured-video-section">
+
+          <div className="featured-video-container">
             <iframe
-              width="100%"
-              height="520"
-              src={videos[0].embed}
-              title="featured video"
-              frameBorder="0"
+              src={selectedVideo.embed}
+              title={selectedVideo.title}
               allowFullScreen
             ></iframe>
 
-            <div className="overlay">
-              <h1>{videos[0].title}</h1>
-              <p>Featured DanoNews video coverage.</p>
+            <h2>{selectedVideo.title}</h2>
+          </div>
+
+        </div>
+      )}
+
+      {/* VIDEO GRID */}
+      <div className="videos-container">
+
+        <div className="videos-grid">
+
+          {videos.map((video) => (
+            <div
+              key={video.id}
+              className="video-card"
+              onClick={() => setSelectedVideo(video)}
+            >
+
+              <div className="video-thumbnail">
+
+                <img
+                  src={video.thumb}
+                  alt={video.title}
+                />
+
+                <div className="play-button">
+                  ▶
+                </div>
+
+                <div className="video-category">
+                  {video.category}
+                </div>
+
+              </div>
+
+              <div className="video-content">
+
+                <h3>{video.title}</h3>
+
+                <p>
+                  Watch full coverage on DanoNews TV.
+                </p>
+
+              </div>
+
             </div>
-          </article>
+          ))}
 
-          <section className="news-strip">
-            <h2>Latest Videos</h2>
+        </div>
 
-            <div className="card-row">
-              {videos.slice(1).map((video) => (
-                <article className="news-card" key={video.id}>
-                  <iframe
-                    width="100%"
-                    height="220"
-                    src={video.embed}
-                    title={video.title}
-                    frameBorder="0"
-                    allowFullScreen
-                  ></iframe>
+      </div>
 
-                  <h3>{video.title}</h3>
-                  <p>Watch now on DanoNews TV</p>
-                </article>
-              ))}
-            </div>
-          </section>
-        </section>
-
-        <aside>
-          <Widgets />
-        </aside>
-      </main>
-
-      <Footer />
     </div>
   );
 }

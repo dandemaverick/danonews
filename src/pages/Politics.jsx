@@ -1,103 +1,159 @@
-import { useEffect, useState } from 'react';
-import Header from '../components/Header';
-import NavBar from '../components/NavBar';
-import Footer from '../components/Footer';
-import Widgets from '../components/Widgets';
-import { supabase } from '../services/supabase';
+import { useEffect, useState } from "react";
+import { supabase } from "../services/supabase";
 
 export default function Politics() {
+
   const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadPolitics();
   }, []);
 
   async function loadPolitics() {
-    const { data } = await supabase
-      .from('posts')
-      .select('*')
-      .ilike('title', '%politic%')
-      .order('id', { ascending: false });
 
-    if (data && data.length > 0) {
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*")
+      .or(
+        "title.ilike.%politic%,title.ilike.%government%,title.ilike.%election%"
+      )
+      .order("id", { ascending: false })
+      .limit(12);
+
+    if (!error && data) {
       setPosts(data);
-    } else {
-      const { data: fallback } = await supabase
-        .from('posts')
-        .select('*')
-        .order('id', { ascending: false })
-        .limit(8);
-
-      if (fallback) setPosts(fallback);
     }
+
+    setLoading(false);
+  }
+
+  if (loading) {
+    return (
+      <div className="text-center py-24 text-xl font-semibold text-gray-600">
+        Loading Politics...
+      </div>
+    );
   }
 
   const hero = posts[0];
-  const stories = posts.slice(1);
+  const latest = posts.slice(1);
 
   return (
-    <div className="site-shell">
-      <Header />
-      <NavBar />
+    <div className="bg-[#f4f6f9] min-h-screen">
 
-      <div className="breaking-bar ticker-shadow">
-        <span>POLITICS LIVE</span>
-        <marquee>
-          Parliament debates reforms • Election updates • Governance headlines • National policy news
-        </marquee>
+      {/* LIVE BAR */}
+      <div className="bg-red-600 text-white py-3 text-center font-semibold tracking-wide">
+        POLITICS LIVE • Parliament • Elections • Governance
       </div>
 
-      <main className="homepage-grid">
-        <section className="lead-grid">
-          {hero && (
-            <article className="hero-card">
-              <img
-                src={hero.image_url || 'https://picsum.photos/900/520?politics'}
-                alt=""
-              />
-              <div className="overlay">
-                <h1>{hero.title}</h1>
-                <p>{hero.content}</p>
-              </div>
-            </article>
-          )}
+      {/* PAGE CONTENT */}
+      <div className="max-w-7xl mx-auto px-4 py-10">
 
-          <div className="stack-cards">
-            {stories.slice(0, 2).map((post) => (
-              <article className="mini-card" key={post.id}>
-                <img
-                  src={post.image_url || 'https://picsum.photos/420/250?gov'}
-                  alt=""
-                />
-                <h3>{post.title}</h3>
-              </article>
-            ))}
+        {/* HERO SECTION */}
+        {hero && (
+
+          <div
+            className="mb-14 relative rounded-3xl overflow-hidden shadow-2xl cursor-pointer group"
+            onClick={() =>
+              window.location.href =
+                `/article/${hero.title.toLowerCase().replace(/\s+/g, "-")}`
+            }
+          >
+
+            <img
+              src={
+                hero.image_url ||
+                "https://picsum.photos/1200/600?politics"
+              }
+              alt={hero.title}
+              className="w-full h-[500px] object-cover group-hover:scale-105 transition duration-500"
+            />
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+
+            <div className="absolute bottom-0 left-0 p-10">
+
+              <span className="bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold">
+                POLITICS
+              </span>
+
+              <h1 className="text-5xl font-bold text-white mt-5 leading-tight max-w-4xl">
+                {hero.title}
+              </h1>
+
+            </div>
+
           </div>
-        </section>
 
-        <aside>
-          <Widgets />
-        </aside>
-      </main>
+        )}
 
-      <section className="news-strip">
-        <h2>Latest Politics</h2>
+        {/* SECTION TITLE */}
+        <div className="flex items-center mb-8">
 
-        <div className="card-row">
-          {stories.map((post) => (
-            <article className="news-card" key={post.id}>
-              <img
-                src={post.image_url || 'https://picsum.photos/400/220?policy'}
-                alt=""
-              />
-              <h3>{post.title}</h3>
-              <p>{post.content?.slice(0, 80)}...</p>
-            </article>
-          ))}
+          <div className="w-1 h-10 bg-red-600 rounded-full mr-4"></div>
+
+          <h2 className="text-4xl font-bold text-[#071a52]">
+            Latest Politics
+          </h2>
+
         </div>
-      </section>
 
-      <Footer />
+        {/* ARTICLES GRID */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+
+          {latest.map((post) => (
+
+            <div
+              key={post.id}
+              className="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition duration-300 cursor-pointer group"
+              onClick={() =>
+                window.location.href =
+                  `/article/${post.title.toLowerCase().replace(/\s+/g, "-")}`
+              }
+            >
+
+              <div className="overflow-hidden">
+
+                <img
+                  src={
+                    post.image_url ||
+                    "https://picsum.photos/600/380?parliament"
+                  }
+                  alt={post.title}
+                  className="w-full h-64 object-cover group-hover:scale-110 transition duration-500"
+                />
+
+              </div>
+
+              <div className="p-6">
+
+                <span className="inline-block bg-[#071a52] text-white text-xs px-3 py-1 rounded-full mb-4">
+                  POLITICS
+                </span>
+
+                <h3 className="font-bold text-2xl leading-snug text-[#071a52] group-hover:text-red-600 transition">
+                  {post.title}
+                </h3>
+
+                <p className="text-gray-600 mt-4 leading-7 line-clamp-3">
+                  {post.content || post.body || "Read full political coverage on DanoNews."}
+                </p>
+
+                <p className="text-sm text-gray-500 mt-5">
+                  DanoNews Political Desk
+                </p>
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </div>
+
     </div>
   );
 }

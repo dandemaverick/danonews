@@ -1,187 +1,77 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
 
 export default function NavBar() {
-  const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 
-  const items = [
-    { name: "News", path: "/" },
-    { name: "Politics", path: "/politics" },
-    { name: "Business", path: "/business" },
-    { name: "Sports", path: "/sports" },
-    { name: "Entertainment", path: "/entertainment" },
-    { name: "Lifestyle", path: "/lifestyle" },
-    { name: "World", path: "/world" },
-    { name: "Opinion", path: "/opinion" },
-    { name: "Videos", path: "/videos" }
+  const navItems = [
+    { name: "NEWS", path: "/" },
+    { name: "POLITICS", path: "/politics" },
+    { name: "BUSINESS", path: "/business" },
+    { name: "SPORTS", path: "/sports" },
+    { name: "ENTERTAINMENT", path: "/entertainment" },
+    { name: "LIFESTYLE", path: "/lifestyle" },
+    { name: "WORLD", path: "/world" },
+    { name: "OPINION", path: "/opinion" },
+    { name: "VIDEOS", path: "/videos" },
   ];
 
-  const isActive = (path) => location.pathname === path;
-
   return (
-    <nav style={styles.nav}>
-      <div style={styles.container}>
-        
-        {/* LEFT */}
-        <div style={styles.left}>
-          {/* LOGO */}
-          <Link to="/" style={styles.logo}>
-            DanoNews
-          </Link>
+    <nav className="bg-[#071a52] text-white sticky top-0 z-50 shadow-md border-b border-white/10">
 
-          {/* DESKTOP MENU */}
-          <div style={styles.menuDesktop}>
-            {items.map((item) => (
+      <div className="max-w-7xl mx-auto px-4">
+
+        <div className="flex items-center justify-between h-[58px]">
+
+          {/* LEFT SIDE */}
+          <div className="flex items-center overflow-x-auto scrollbar-hide">
+
+            {navItems.map((item) => (
+
               <Link
                 key={item.name}
                 to={item.path}
-                style={{
-                  ...styles.link,
-                  color: isActive(item.path) ? "#e00000" : "#fff"
-                }}
+                className={`relative px-4 lg:px-5 py-5 text-[13px] lg:text-sm font-semibold tracking-wide transition-all duration-300 whitespace-nowrap hover:text-red-400 ${
+                  location.pathname === item.path
+                    ? "text-white"
+                    : "text-white/90"
+                }`}
               >
+
                 {item.name}
+
+                {location.pathname === item.path && (
+                  <span className="absolute bottom-0 left-0 w-full h-[3px] bg-red-600 rounded-full"></span>
+                )}
+
               </Link>
+
             ))}
+
           </div>
+
+          {/* RIGHT SIDE */}
+          <div className="hidden md:flex items-center gap-2">
+
+            <Link
+              to="/bookmarks"
+              className="px-4 py-2 rounded-full text-sm font-medium bg-white/5 hover:bg-white/10 transition"
+            >
+              🔖 Bookmarks
+            </Link>
+
+            <Link
+              to="/profile"
+              className="px-4 py-2 rounded-full text-sm font-medium bg-red-600 hover:bg-red-700 transition"
+            >
+              👤 Account
+            </Link>
+
+          </div>
+
         </div>
 
-        {/* RIGHT */}
-        <div style={styles.right}>
-          <span style={styles.search}>🔍</span>
-
-          <Link to="/videos" style={styles.liveBtn}>
-            LIVE
-          </Link>
-
-          {/* HAMBURGER */}
-          <div
-            style={styles.hamburger}
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            ☰
-          </div>
-        </div>
       </div>
 
-      {/* MOBILE MENU */}
-      {menuOpen && (
-        <div style={styles.mobileMenu}>
-          {items.map((item) => (
-            <Link
-              key={item.name}
-              to={item.path}
-              onClick={() => setMenuOpen(false)}
-              style={styles.mobileLink}
-            >
-              {item.name}
-            </Link>
-          ))}
-        </div>
-      )}
     </nav>
   );
-}
-
-/* STYLES */
-const styles = {
-  nav: {
-    background: "#020617",
-    borderBottom: "2px solid #e00000",
-    position: "sticky",
-    top: 0,
-    zIndex: 999
-  },
-
-  container: {
-    maxWidth: "1300px",
-    margin: "auto",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "0 20px",
-    minHeight: "64px"
-  },
-
-  left: {
-    display: "flex",
-    alignItems: "center",
-    gap: "25px"
-  },
-
-  logo: {
-    color: "#fff",
-    fontSize: "22px",
-    fontWeight: "800",
-    textDecoration: "none"
-  },
-
-  menuDesktop: {
-    display: "flex",
-    gap: "18px"
-  },
-
-  link: {
-    textDecoration: "none",
-    fontSize: "14px",
-    fontWeight: "600",
-    transition: "0.2s"
-  },
-
-  right: {
-    display: "flex",
-    alignItems: "center",
-    gap: "15px"
-  },
-
-  search: {
-    color: "#fff",
-    fontSize: "18px",
-    cursor: "pointer"
-  },
-
-  liveBtn: {
-    background: "#e00000",
-    color: "#fff",
-    padding: "8px 14px",
-    borderRadius: "5px",
-    textDecoration: "none",
-    fontWeight: "700",
-    fontSize: "13px"
-  },
-
-  hamburger: {
-    display: "none",
-    fontSize: "22px",
-    color: "#fff",
-    cursor: "pointer"
-  },
-
-  mobileMenu: {
-    display: "flex",
-    flexDirection: "column",
-    background: "#020617",
-    padding: "15px"
-  },
-
-  mobileLink: {
-    color: "#fff",
-    textDecoration: "none",
-    padding: "10px 0",
-    borderBottom: "1px solid #1e293b"
-  }
-};
-
-/* RESPONSIVE (inject via JS) */
-if (typeof window !== "undefined") {
-  const style = document.createElement("style");
-  style.innerHTML = `
-    @media (max-width: 900px) {
-      .menuDesktop {
-        display: none !important;
-      }
-    }
-  `;
-  document.head.appendChild(style);
 }

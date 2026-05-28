@@ -1,0 +1,61 @@
+/* COLOR VARIABLES */
+:root {
+  /* Primary Colors */
+  --primary: #e00000;
+  --primary-dark: #c70000;
+  --primary-light: #ff3333;
+
+  /* Neutral Colors */
+  --text: #000;
+  --text-light: #475569;
+  --text-muted: #64748b;
+  --bg: #ffffff;
+  --bg-alt: #f1f5f9;
+  --border: #e2e8f0;
+  --border-dark: #cbd5e1;
+
+  /* Component Colors */
+  --accent: #e00000;
+  --accent-bg: #fee2e2;
+  --accent-border: #fca5a5;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* Transitions */
+  --transition: all 0.3s ease;
+  --transition-fast: all 0.2s ease;
+}
+
+/* DARK MODE (Optional) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #ffffff;
+    --text-light: #cbd5e1;
+    --text-muted: #94a3b8;
+    --bg: #0f172a;
+    --bg-alt: #1e293b;
+    --border: #334155;
+    --border-dark: #475569;
+  }
+}

@@ -1,67 +1,118 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useCallback, useState, useEffect } from "react";
 
-const NewsContext = createContext();
+// ✅ EXPORT CONTEXT (CRITICAL FIX)
+export const NewsContext = createContext();
 
-// ✅ YOUR LIVE BACKEND
-const API_BASE = "https://danonews.onrender.com";
+// ✅ USE ENVIRONMENT VARIABLE
+const API_BASE = import.meta.env.VITE_API_URL || "https://danonews.onrender.com";
+
+console.log("📡 API Base URL:", API_BASE);
 
 export const NewsProvider = ({ children }) => {
   const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // 🔥 GET NEWS
-  const fetchNews = async (category = "general") => {
+  // =========================
+  // FETCH NEWS
+  // =========================
+  const fetchNews = useCallback(async (category = "general") => {
     setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/api/news`);
-      const data = await res.json();
+    setError(null);
 
-      if (data.status === "ok") {
-        setArticles(data.articles);
-      } else {
-        console.error("API Error:", data);
+    try {
+      const res = await fetch(`${API_BASE}/api/news?category=${category}`);
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
       }
-    } catch (err) {
-      console.error("News fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 🔍 SEARCH NEWS
-  const searchNews = async (query) => {
-    if (!query) return;
-    setLoading(true);
-
-    try {
-      const res = await fetch(
-        `${API_BASE}/api/search?q=${encodeURIComponent(query)}`
-      );
 
       const data = await res.json();
 
-      if (data.status === "ok") {
+      if (data?.status === "ok" && Array.isArray(data.articles)) {
         setArticles(data.articles);
+
+        // ✅ SAVE FOR RELATED ARTICLES SYSTEM
+        localStorage.setItem("allArticles", JSON.stringify(data.articles));
       } else {
-        console.error("Search API Error:", data);
+        throw new Error("Invalid API response");
       }
+
     } catch (err) {
-      console.error("Search error:", err);
+      setError(err.message);
+      console.error("📛 News fetch error:", err);
     } finally {
       setLoading(false);
     }
-  };
-
-  // 🚀 INITIAL LOAD
-  useEffect(() => {
-    fetchNews();
   }, []);
 
+  // =========================
+  // SEARCH NEWS
+  // =========================
+  const searchNews = useCallback(async (query) => {
+    if (!query || query.trim().length === 0) {
+      setError("Search query cannot be empty");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const encodedQuery = encodeURIComponent(query.trim());
+      const res = await fetch(`${API_BASE}/api/search?q=${encodedQuery}`);
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      if (data?.status === "ok" && Array.isArray(data.articles)) {
+        setArticles(data.articles);
+      } else {
+        throw new Error("Invalid API response");
+      }
+
+    } catch (err) {
+      setError(err.message);
+      console.error("📛 Search error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // =========================
+  // INITIAL LOAD
+  // =========================
+  useEffect(() => {
+    fetchNews("general");
+  }, [fetchNews]);
+
   return (
-    <NewsContext.Provider value={{ articles, loading, fetchNews, searchNews }}>
+    <NewsContext.Provider
+      value={{
+        articles,
+        loading,
+        error,
+        fetchNews,
+        searchNews
+      }}
+    >
       {children}
     </NewsContext.Provider>
   );
 };
 
-export const useNews = () => useContext(NewsContext);
+// =========================
+// CUSTOM HOOK (BEST PRACTICE)
+// =========================
+export const useNews = () => {
+  const context = useContext(NewsContext);
+
+  if (!context) {
+    throw new Error("useNews must be used within a NewsProvider");
+  }
+
+  return context;
+};

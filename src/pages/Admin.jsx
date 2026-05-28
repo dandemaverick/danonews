@@ -1,7 +1,10 @@
 // src/pages/Admin.jsx
+
 import { useRef, useState } from "react";
 import { supabase } from "../services/supabase";
+
 export default function Admin() {
+
   const editorRef = useRef(null);
   const fileRef = useRef(null);
 
@@ -11,28 +14,53 @@ export default function Admin() {
   const [sponsored, setSponsored] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  /* =========================
+     TEXT EDITOR COMMANDS
+  ========================= */
+
   function exec(cmd, value = null) {
+
     document.execCommand(cmd, false, value);
+
     editorRef.current.focus();
+
   }
+
+  /* =========================
+     OPEN FILE PICKER
+  ========================= */
 
   function openUpload() {
+
     fileRef.current.click();
+
   }
 
+  /* =========================
+     IMAGE UPLOAD
+  ========================= */
+
   async function uploadImage(e) {
+
     const file = e.target.files[0];
+
     if (!file) return;
 
-    const fileName = Date.now() + "-" + file.name;
+    const fileName =
+      `${Date.now()}-${file.name}`;
 
     const { error } = await supabase.storage
       .from("news-images")
       .upload(fileName, file);
 
     if (error) {
+
+      console.log(error);
+
       alert(error.message);
+
       return;
+
     }
 
     const { data } = supabase.storage
@@ -42,45 +70,73 @@ export default function Admin() {
     const url = data.publicUrl;
 
     setImage(url);
+
+    /* INSERT IMAGE INTO ARTICLE */
+
     exec("insertImage", url);
+
+    alert("Image uploaded successfully");
+
   }
 
+  /* =========================
+     PUBLISH ARTICLE
+  ========================= */
+
   async function publishPost() {
-    const body = editorRef.current.innerHTML;
+
+    const body =
+      editorRef.current.innerHTML;
 
     if (!title || !body) {
+
       alert("Title and content required");
+
       return;
+
     }
 
     setLoading(true);
 
-    const { error } = await supabase.from("posts").insert([
-      {
-        title,
-        body,
-        image,
-        cat,
-        sponsored
-      }
-    ]);
+    const { error } = await supabase
+      .from("posts")
+      .insert([
+        {
+          title,
+          body,
+          image_url: image,
+          category: cat,
+          sponsored
+        }
+      ]);
 
     setLoading(false);
 
     if (error) {
+
+      console.log(error);
+
       alert(error.message);
+
       return;
+
     }
 
     alert("Published Successfully");
 
+    /* RESET */
+
     setTitle("");
     setImage("");
+    setCat("News");
     setSponsored(false);
+
     editorRef.current.innerHTML = "";
+
   }
 
   return (
+
     <div
       style={{
         display: "grid",
@@ -89,7 +145,9 @@ export default function Admin() {
         background: "#f5f6fa"
       }}
     >
+
       {/* SIDEBAR */}
+
       <div
         style={{
           background: "#fff",
@@ -97,7 +155,13 @@ export default function Admin() {
           padding: "30px 20px"
         }}
       >
-        <h2 style={{ color: "#e00000", fontSize: "34px" }}>
+
+        <h2
+          style={{
+            color: "#e00000",
+            fontSize: "34px"
+          }}
+        >
           DanoCMS
         </h2>
 
@@ -110,24 +174,37 @@ export default function Admin() {
           "Monetization",
           "Settings"
         ].map((item, i) => (
+
           <div
             key={item}
             style={{
               padding: "14px",
               marginTop: "8px",
               borderRadius: "8px",
-              background: i === 1 ? "#fff0f0" : "transparent",
-              color: i === 1 ? "#e00000" : "#333",
+              background:
+                i === 1
+                  ? "#fff0f0"
+                  : "transparent",
+
+              color:
+                i === 1
+                  ? "#e00000"
+                  : "#333",
+
               fontWeight: "600"
             }}
           >
             {item}
           </div>
+
         ))}
+
       </div>
 
-      {/* MAIN */}
+      {/* MAIN CONTENT */}
+
       <div style={{ padding: "35px" }}>
+
         <div
           style={{
             background: "#fff",
@@ -135,18 +212,24 @@ export default function Admin() {
             padding: "30px"
           }}
         >
+
           <h2 style={{ color: "#0d2b6b" }}>
             Create Article
           </h2>
 
+          {/* TITLE */}
+
           <input
             placeholder="Add title..."
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) =>
+              setTitle(e.target.value)
+            }
             style={input}
           />
 
           {/* EDITOR */}
+
           <div
             ref={editorRef}
             contentEditable
@@ -163,14 +246,23 @@ export default function Admin() {
             }}
           />
 
+          {/* IMAGE URL */}
+
           <input
             placeholder="Featured image URL..."
             value={image}
-            onChange={(e) => setImage(e.target.value)}
+            onChange={(e) =>
+              setImage(e.target.value)
+            }
             style={input}
           />
 
-          <button style={grey} onClick={openUpload}>
+          {/* UPLOAD BUTTON */}
+
+          <button
+            style={grey}
+            onClick={openUpload}
+          >
             Upload Image
           </button>
 
@@ -182,9 +274,13 @@ export default function Admin() {
             onChange={uploadImage}
           />
 
+          {/* CATEGORY */}
+
           <select
             value={cat}
-            onChange={(e) => setCat(e.target.value)}
+            onChange={(e) =>
+              setCat(e.target.value)
+            }
             style={input}
           >
             <option>News</option>
@@ -196,6 +292,7 @@ export default function Admin() {
           </select>
 
           {/* SPONSORED */}
+
           <div
             style={{
               marginTop: "18px",
@@ -205,6 +302,7 @@ export default function Admin() {
               border: "1px solid #ffe2a8"
             }}
           >
+
             <label
               style={{
                 display: "flex",
@@ -213,21 +311,28 @@ export default function Admin() {
                 fontWeight: "700"
               }}
             >
+
               <input
                 type="checkbox"
                 checked={sponsored}
                 onChange={(e) =>
-                  setSponsored(e.target.checked)
+                  setSponsored(
+                    e.target.checked
+                  )
                 }
               />
 
               Mark as Sponsored Post
+
             </label>
 
             <small style={{ color: "#777" }}>
               Paid client content will show Sponsored badges
             </small>
+
           </div>
+
+          {/* PUBLISH */}
 
           <div
             style={{
@@ -236,18 +341,31 @@ export default function Admin() {
               justifyContent: "flex-end"
             }}
           >
+
             <button
               style={blue}
               onClick={publishPost}
             >
-              {loading ? "Publishing..." : "Publish Now"}
+              {loading
+                ? "Publishing..."
+                : "Publish Now"}
             </button>
+
           </div>
+
         </div>
+
       </div>
+
     </div>
+
   );
+
 }
+
+/* =========================
+   STYLES
+========================= */
 
 const input = {
   width: "100%",

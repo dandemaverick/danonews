@@ -1,3 +1,4 @@
+import "./home.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
@@ -18,7 +19,7 @@ export default function Sports() {
         .from("posts")
         .select("*")
         .or(
-          "title.ilike.%sport%,title.ilike.%football%,title.ilike.%black stars%,title.ilike.%premier league%,title.ilike.%ghana%"
+          "title.ilike.%sport%,title.ilike.%football%,title.ilike.%black stars%,title.ilike.%ghana%"
         )
         .order("id", { ascending: false })
         .limit(12);
@@ -90,16 +91,7 @@ export default function Sports() {
 
   if (loading) {
     return (
-      <div
-        style={{
-          minHeight: "70vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "28px",
-          fontWeight: "bold",
-        }}
-      >
+      <div className="loader">
         Loading Sports News...
       </div>
     );
@@ -109,98 +101,48 @@ export default function Sports() {
   const latest = posts.slice(1);
 
   return (
-    <div style={{ background: "#f3f4f6", minHeight: "100vh" }}>
+    <div className="container">
 
-      {/* TOP BAR */}
       <div
         style={{
-          background: "#dc2626",
-          color: "white",
-          padding: "14px",
+          background: "#e11d48",
+          color: "#fff",
+          padding: "12px",
           textAlign: "center",
-          fontWeight: "bold",
-          letterSpacing: "0.5px",
+          fontWeight: "600",
+          marginBottom: "30px",
+          borderRadius: "8px",
         }}
       >
         SPORTS LIVE • Black Stars • Premier League • Transfers
       </div>
 
-      {/* MAIN CONTAINER */}
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "40px 20px",
-        }}
-      >
+      <div className="main-content">
 
-        {/* HERO */}
-        {hero && (
-          <div
-            onClick={() => openArticle(hero)}
-            style={{
-              position: "relative",
-              borderRadius: "24px",
-              overflow: "hidden",
-              cursor: "pointer",
-              marginBottom: "50px",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-            }}
-          >
-            <img
-              src={hero.image_url}
-              alt={hero.title}
-              style={{
-                width: "100%",
-                height: "520px",
-                objectFit: "cover",
-                display: "block",
-              }}
-            />
+        <div className="content-left">
 
+          {hero && (
             <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.1))",
-                display: "flex",
-                alignItems: "flex-end",
-              }}
+              className="hero-story"
+              onClick={() => openArticle(hero)}
             >
-              <div style={{ padding: "40px" }}>
-                <span
-                  style={{
-                    background: "#dc2626",
-                    color: "white",
-                    padding: "8px 18px",
-                    borderRadius: "50px",
-                    fontWeight: "bold",
-                    fontSize: "14px",
-                  }}
-                >
-                  SPORTS
-                </span>
+              <div
+                className="hero-image-link"
+                style={{
+                  backgroundImage: `url(${hero.image_url})`,
+                  height: "500px",
+                }}
+              />
 
-                <h1
-                  style={{
-                    color: "white",
-                    fontSize: "48px",
-                    marginTop: "20px",
-                    lineHeight: "1.2",
-                    maxWidth: "850px",
-                    fontWeight: "800",
-                  }}
-                >
-                  {hero.title}
-                </h1>
+              <div className="hero-overlay">
+                <span className="badge red">SPORTS</span>
+                <h1>{hero.title}</h1>
 
                 <p
                   style={{
-                    color: "#e5e7eb",
-                    marginTop: "18px",
-                    fontSize: "18px",
+                    marginTop: "15px",
+                    color: "#eee",
+                    fontSize: "16px",
                     maxWidth: "700px",
                   }}
                 >
@@ -208,107 +150,69 @@ export default function Sports() {
                 </p>
               </div>
             </div>
+          )}
+
+          <div className="section">
+            <div className="section-header">
+              <h2>Latest Sports News</h2>
+            </div>
+
+            <div className="featured-grid">
+              {latest.map((post) => (
+                <div
+                  key={post.id}
+                  className="card"
+                  onClick={() => openArticle(post)}
+                >
+                  <div
+                    className="card-image"
+                    style={{
+                      backgroundImage: `url(${post.image_url})`,
+                    }}
+                  />
+
+                  <div className="card-content">
+                    <h3>{post.title}</h3>
+
+                    <p
+                      style={{
+                        marginTop: "10px",
+                        color: "#666",
+                        lineHeight: "1.6",
+                      }}
+                    >
+                      {post.content}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        )}
 
-        {/* TITLE */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            marginBottom: "30px",
-          }}
-        >
-          <div
-            style={{
-              width: "6px",
-              height: "38px",
-              background: "#dc2626",
-              borderRadius: "10px",
-              marginRight: "14px",
-            }}
-          ></div>
-
-          <h2
-            style={{
-              fontSize: "36px",
-              fontWeight: "800",
-              color: "#111827",
-            }}
-          >
-            Latest Sports News
-          </h2>
         </div>
 
-        {/* GRID */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "30px",
-          }}
-        >
-          {latest.map((post) => (
-            <div
-              key={post.id}
-              onClick={() => openArticle(post)}
-              style={{
-                background: "white",
-                borderRadius: "22px",
-                overflow: "hidden",
-                cursor: "pointer",
-                boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
-                transition: "0.3s",
-              }}
-            >
-              <img
-                src={post.image_url}
-                alt={post.title}
-                style={{
-                  width: "100%",
-                  height: "240px",
-                  objectFit: "cover",
-                }}
-              />
+        <div className="sidebar">
 
-              <div style={{ padding: "24px" }}>
-                <h3
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "700",
-                    lineHeight: "1.4",
-                    color: "#111827",
-                    marginBottom: "14px",
-                  }}
-                >
-                  {post.title}
-                </h3>
+          <div className="sidebar-widget">
+            <h3>Trending Sports</h3>
 
-                <p
-                  style={{
-                    color: "#6b7280",
-                    lineHeight: "1.7",
-                    fontSize: "16px",
-                  }}
-                >
-                  {post.content}
-                </p>
+            {posts.map((post, i) => (
+              <div
+                key={i}
+                className="trending-item"
+                onClick={() => openArticle(post)}
+              >
+                <div className="trend-number">{i + 1}</div>
 
-                <div
-                  style={{
-                    marginTop: "20px",
-                    color: "#dc2626",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Read More →
-                </div>
+                <div>{post.title}</div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
         </div>
 
       </div>
+
     </div>
   );
 }

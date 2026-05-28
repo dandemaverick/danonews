@@ -40,54 +40,60 @@ export default function Admin() {
      IMAGE UPLOAD
   ========================= */
 
- async function uploadImage(e) {
+  async function uploadImage(e) {
 
-  const file = e.target.files[0];
+    const file = e.target.files[0];
 
-  if (!file) return;
+    if (!file) return;
 
-  const fileExt =
-    file.name.split(".").pop();
+    const fileExt =
+      file.name.split(".").pop();
 
-  const fileName =
-    `uploads/${Date.now()}.${fileExt}`;
+    const fileName =
+      `uploads/${Date.now()}.${fileExt}`;
 
-  const { data, error } = await supabase.storage
-    .from("news-images")
-    .upload(fileName, file, {
-      cacheControl: "3600",
-      upsert: true
-    });
+    const { error } = await supabase.storage
+      .from("news-images")
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: true
+      });
 
-  if (error) {
+    if (error) {
 
-    console.log(error);
+      console.log(error);
 
-    alert(error.message);
+      alert(error.message);
 
-    return;
+      return;
 
-  }
+    }
 
-  const { data: publicData } =
-    supabase.storage
+    const { data } = supabase.storage
       .from("news-images")
       .getPublicUrl(fileName);
 
-  const imageUrl =
-    publicData.publicUrl;
+    const imageUrl =
+      data.publicUrl;
 
-  setImage(imageUrl);
+    /* SAVE FEATURED IMAGE */
 
-  exec("insertImage", imageUrl);
+    setImage(imageUrl);
 
-  alert("Image uploaded successfully");
+    /* INSERT IMAGE PREVIEW INTO EDITOR */
 
-}
-
-    /* INSERT IMAGE INTO ARTICLE */
-
-    exec("insertImage", url);
+    editorRef.current.innerHTML += `
+      <p>
+        <img
+          src="${imageUrl}"
+          style="
+            max-width:100%;
+            border-radius:12px;
+            margin:20px 0;
+          "
+        />
+      </p>
+    `;
 
     alert("Image uploaded successfully");
 
@@ -140,7 +146,7 @@ export default function Admin() {
 
     alert("Published Successfully");
 
-    /* RESET */
+    /* RESET FORM */
 
     setTitle("");
     setImage("");
@@ -175,7 +181,8 @@ export default function Admin() {
         <h2
           style={{
             color: "#e00000",
-            fontSize: "34px"
+            fontSize: "34px",
+            marginBottom: "30px"
           }}
         >
           DanoCMS
@@ -230,7 +237,12 @@ export default function Admin() {
           }}
         >
 
-          <h2 style={{ color: "#0d2b6b" }}>
+          <h2
+            style={{
+              color: "#0d2b6b",
+              marginBottom: "20px"
+            }}
+          >
             Create Article
           </h2>
 
@@ -257,23 +269,42 @@ export default function Admin() {
             }}
           >
 
-            <button style={toolbarBtn} onClick={() => exec("bold")}>
+            <button
+              style={toolbarBtn}
+              onClick={() => exec("bold")}
+            >
               Bold
             </button>
 
-            <button style={toolbarBtn} onClick={() => exec("italic")}>
+            <button
+              style={toolbarBtn}
+              onClick={() => exec("italic")}
+            >
               Italic
             </button>
 
-            <button style={toolbarBtn} onClick={() => exec("underline")}>
+            <button
+              style={toolbarBtn}
+              onClick={() => exec("underline")}
+            >
               Underline
             </button>
 
-            <button style={toolbarBtn} onClick={() => exec("insertUnorderedList")}>
+            <button
+              style={toolbarBtn}
+              onClick={() =>
+                exec("insertUnorderedList")
+              }
+            >
               Bullet List
             </button>
 
-            <button style={toolbarBtn} onClick={() => exec("formatBlock", "<h2>")}>
+            <button
+              style={toolbarBtn}
+              onClick={() =>
+                exec("formatBlock", "<h2>")
+              }
+            >
               H2
             </button>
 
@@ -297,7 +328,7 @@ export default function Admin() {
             }}
           />
 
-          {/* IMAGE URL */}
+          {/* FEATURED IMAGE */}
 
           <input
             placeholder="Featured image URL..."

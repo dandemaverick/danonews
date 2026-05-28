@@ -6,90 +6,79 @@ export default function Article() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // GET ARTICLE
   const article =
     location.state?.article ||
     JSON.parse(localStorage.getItem("currentArticle"));
 
-  // IMAGE HANDLER
-  const image =
-    article?.image ||
-    article?.urlToImage ||
-    article?.image_url ||
-    "https://placehold.co/1200x700?text=DanoNews";
-
-  // LOADING / EMPTY
   if (!article) {
     return (
-      <div className="article-container">
-        <button onClick={() => navigate("/")}>
-          ← Back Home
-        </button>
+      <div className="article-page">
+        <div className="article-not-found">
+          <h2>Article not found</h2>
 
-        <h2>Article not found</h2>
+          <button onClick={() => navigate("/")}>
+            Back Home
+          </button>
+        </div>
       </div>
     );
   }
+
+  const image =
+    article.image ||
+    article.urlToImage ||
+    article.image_url ||
+    "https://placehold.co/1200x700?text=DanoNews";
 
   return (
 
     <div className="article-page">
 
-      <div className="article-container">
+      <div className="article-wrapper">
 
-        {/* MAIN IMAGE */}
+        <button
+          className="back-btn"
+          onClick={() => navigate("/")}
+        >
+          ← Back Home
+        </button>
 
-        <div className="article-image-wrap">
+        <img
+          src={image}
+          alt={article.title}
+          className="article-main-image"
+        />
 
-          <img
-            src={image}
-            alt={article.title}
-            className="article-image"
-          />
+        <h1 className="article-title">
+          {article.title}
+        </h1>
 
-        </div>
-
-        {/* ARTICLE CONTENT */}
+        <p className="article-description">
+          {article.description}
+        </p>
 
         <div className="article-content">
 
-          <button
-            className="back-btn"
-            onClick={() => navigate("/")}
-          >
-            ← Back Home
-          </button>
-
-          <h1>{article.title}</h1>
-
-          <p className="article-description">
-            {article.description}
+          <p>
+            {article.content ||
+              article.description ||
+              "Full story coming soon on DanoNews."}
           </p>
 
-          <div className="article-body">
-
-            <p>
-              {article.content ||
-                article.description ||
-                "Full story coming soon on DanoNews."}
-            </p>
-
-          </div>
-
-          {/* SOURCE LINK */}
-
-          {article.url && (
-            <a
-              href={article.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="source-link"
-            >
-              Read Original Source
-            </a>
-          )}
-
         </div>
+
+        {article.url && (
+
+          <a
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="source-btn"
+          >
+            Read Original Source
+          </a>
+
+        )}
 
       </div>
 

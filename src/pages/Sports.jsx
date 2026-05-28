@@ -102,18 +102,19 @@ export default function Sports() {
   return (
     <div className="bg-gray-100 min-h-screen">
 
+      {/* TOP STRIP */}
       <div className="bg-red-600 text-white py-3 text-center font-semibold tracking-wide">
         SPORTS LIVE • Black Stars • Premier League • Transfers
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-10">
+      <div className="max-w-7xl mx-auto px-4 py-10 w-full">
 
+        {/* HERO SECTION */}
         {hero && (
-          
-            <div
-              onClick={() => openArticle(hero)}
-              className="relative rounded-3xl overflow-hidden cursor-pointer mb-14 shadow-xl mx-auto max-w-6xl"
-            >
+          <div
+            onClick={() => openArticle(hero)}
+            className="relative rounded-3xl overflow-hidden cursor-pointer mb-14 shadow-xl mx-auto max-w-6xl"
+          >
             <img
               src={
                 hero.image_url ||
@@ -141,7 +142,8 @@ export default function Sports() {
           </div>
         )}
 
-        <div className="flex items-center mb-8">
+        {/* SECTION TITLE */}
+        <div className="flex items-center mb-8 max-w-6xl mx-auto">
           <div className="w-2 h-10 bg-red-600 mr-4 rounded-full"></div>
 
           <h2 className="text-3xl font-bold text-gray-900">
@@ -149,7 +151,10 @@ export default function Sports() {
           </h2>
         </div>
 
+        {/* NEWS GRID */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+
+          {latest.map((post) => (
             <div
               key={post.id}
               onClick={() => openArticle(post)}
@@ -181,8 +186,8 @@ export default function Sports() {
               </div>
             </div>
           ))}
-        </div>
 
+        </div>
       </div>
     </div>
   );

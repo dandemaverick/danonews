@@ -1,159 +1,119 @@
+import "./home.css";
 import { useEffect, useState } from "react";
-import { supabase } from "../services/supabase";
+import { useNavigate } from "react-router-dom";
+import { getNews } from "../services/newsApi";
 
 export default function Politics() {
-
-  const [posts, setPosts] = useState([]);
+  const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
-    loadPolitics();
+    loadNews();
   }, []);
 
-  async function loadPolitics() {
-
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*")
-      .or(
-        "title.ilike.%politic%,title.ilike.%government%,title.ilike.%election%"
-      )
-      .order("id", { ascending: false })
-      .limit(12);
-
-    if (!error && data) {
-      setPosts(data);
+  async function loadNews() {
+    try {
+      const data = await getNews("politics");
+      setArticles(data || []);
+    } catch (err) {
+      console.error(err);
     }
 
     setLoading(false);
   }
 
+  const openArticle = (article) => {
+    const slug = article.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-");
+
+    navigate(`/article/${slug}`, {
+      state: { article },
+    });
+  };
+
   if (loading) {
-    return (
-      <div className="text-center py-24 text-xl font-semibold text-gray-600">
-        Loading Politics...
-      </div>
-    );
+    return <div className="loader">Loading Politics News...</div>;
   }
 
-  const hero = posts[0];
-  const latest = posts.slice(1);
+  const hero = articles[0];
+  const latest = articles.slice(1);
 
   return (
-    <div className="bg-[#f4f6f9] min-h-screen">
+    <div className="container">
+      <div className="main-content">
 
-      {/* LIVE BAR */}
-      <div className="bg-red-600 text-white py-3 text-center font-semibold tracking-wide">
-        POLITICS LIVE • Parliament • Elections • Governance
-      </div>
+        <div className="content-left">
 
-      {/* PAGE CONTENT */}
-      <div className="max-w-7xl mx-auto px-4 py-10">
+          {hero && (
+            <div
+              className="hero-story"
+              onClick={() => openArticle(hero)}
+            >
+              <div
+                className="hero-image-link"
+                style={{
+                  backgroundImage: `url(${hero.image})`,
+                  height: "500px",
+                }}
+              />
 
-        {/* HERO SECTION */}
-        {hero && (
+              <div className="hero-overlay">
+                <span className="badge red">POLITICS</span>
+                <h1>{hero.title}</h1>
+              </div>
+            </div>
+          )}
 
-          <div
-            className="mb-14 relative rounded-3xl overflow-hidden shadow-2xl cursor-pointer group"
-            onClick={() =>
-              window.location.href =
-                `/article/${hero.title.toLowerCase().replace(/\s+/g, "-")}`
-            }
-          >
-
-            <img
-              src={
-                hero.image_url ||
-                "https://picsum.photos/1200/600?politics"
-              }
-              alt={hero.title}
-              className="w-full h-[500px] object-cover group-hover:scale-105 transition duration-500"
-            />
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
-
-            <div className="absolute bottom-0 left-0 p-10">
-
-              <span className="bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold">
-                POLITICS
-              </span>
-
-              <h1 className="text-5xl font-bold text-white mt-5 leading-tight max-w-4xl">
-                {hero.title}
-              </h1>
-
+          <div className="section">
+            <div className="section-header">
+              <h2>Latest Politics News</h2>
             </div>
 
+            <div className="featured-grid">
+              {latest.map((article, i) => (
+                <div
+                  key={i}
+                  className="card"
+                  onClick={() => openArticle(article)}
+                >
+                  <div
+                    className="card-image"
+                    style={{
+                      backgroundImage: `url(${article.image})`,
+                    }}
+                  />
+
+                  <div className="card-content">
+                    <h3>{article.title}</h3>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-        )}
-
-        {/* SECTION TITLE */}
-        <div className="flex items-center mb-8">
-
-          <div className="w-1 h-10 bg-red-600 rounded-full mr-4"></div>
-
-          <h2 className="text-4xl font-bold text-[#071a52]">
-            Latest Politics
-          </h2>
-
         </div>
 
-        {/* ARTICLES GRID */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="sidebar">
+          <div className="sidebar-widget">
+            <h3>Trending Politics</h3>
 
-          {latest.map((post) => (
-
-            <div
-              key={post.id}
-              className="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition duration-300 cursor-pointer group"
-              onClick={() =>
-                window.location.href =
-                  `/article/${post.title.toLowerCase().replace(/\s+/g, "-")}`
-              }
-            >
-
-              <div className="overflow-hidden">
-
-                <img
-                  src={
-                    post.image_url ||
-                    "https://picsum.photos/600/380?parliament"
-                  }
-                  alt={post.title}
-                  className="w-full h-64 object-cover group-hover:scale-110 transition duration-500"
-                />
-
+            {articles.map((article, i) => (
+              <div
+                key={i}
+                className="trending-item"
+                onClick={() => openArticle(article)}
+              >
+                <div className="trend-number">{i + 1}</div>
+                <div>{article.title}</div>
               </div>
-
-              <div className="p-6">
-
-                <span className="inline-block bg-[#071a52] text-white text-xs px-3 py-1 rounded-full mb-4">
-                  POLITICS
-                </span>
-
-                <h3 className="font-bold text-2xl leading-snug text-[#071a52] group-hover:text-red-600 transition">
-                  {post.title}
-                </h3>
-
-                <p className="text-gray-600 mt-4 leading-7 line-clamp-3">
-                  {post.content || post.body || "Read full political coverage on DanoNews."}
-                </p>
-
-                <p className="text-sm text-gray-500 mt-5">
-                  DanoNews Political Desk
-                </p>
-
-              </div>
-
-            </div>
-
-          ))}
-
+            ))}
+          </div>
         </div>
 
       </div>
-
     </div>
   );
 }

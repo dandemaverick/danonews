@@ -1,5 +1,6 @@
 // src/pages/Admin.jsx
 
+import Admin from "./pages/Admin";
 import { useRef, useState } from "react";
 import { supabase } from "../services/supabase";
 export default function Admin() {

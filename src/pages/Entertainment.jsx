@@ -1,10 +1,14 @@
+import "./home.css";
 import { useEffect, useState } from "react";
-import { supabase } from "../services/supabase";
+import { useNavigate } from "react-router-dom";
+import { getNews } from "../services/newsApi";
 
 export default function Entertainment() {
 
-  const [posts, setPosts] = useState([]);
+  const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadEntertainment();
@@ -12,144 +16,208 @@ export default function Entertainment() {
 
   async function loadEntertainment() {
 
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*")
-      .or(
-        "title.ilike.%music%,title.ilike.%movie%,title.ilike.%celebrity%,title.ilike.%entertainment%"
-      )
-      .order("id", { ascending: false })
-      .limit(12);
+    try {
 
-    if (!error && data) {
-      setPosts(data);
+      const data = await getNews("entertainment");
+
+      if (data && data.length > 0) {
+        setArticles(data);
+      }
+
+    } catch (error) {
+
+      console.log(error);
+
     }
 
     setLoading(false);
   }
 
+  const openArticle = (article) => {
+
+    const slug = article.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-");
+
+    navigate(`/article/${slug}`, {
+      state: { article },
+    });
+
+  };
+
   if (loading) {
+
     return (
-      <div className="text-center py-24 text-xl font-semibold text-gray-600">
+      <div className="loader">
         Loading Entertainment...
       </div>
     );
+
   }
 
-  const hero = posts[0];
-  const latest = posts.slice(1);
+  const hero = articles[0];
+  const latest = articles.slice(1);
 
   return (
-    <div className="bg-[#f4f6f9] min-h-screen">
+
+    <div className="container">
 
       {/* TOP BAR */}
-      <div className="bg-red-600 text-white py-3 text-center font-semibold tracking-wide">
+
+      <div
+        style={{
+          background: "#e11d48",
+          color: "#fff",
+          padding: "12px",
+          textAlign: "center",
+          fontWeight: "600",
+          marginBottom: "30px",
+          borderRadius: "8px",
+        }}
+      >
         ENTERTAINMENT LIVE • Music • Movies • Celebrities
       </div>
 
-      {/* MAIN CONTENT */}
-      <div className="max-w-7xl mx-auto px-4 py-10">
+      <div className="main-content">
 
-        {/* HERO SECTION */}
-        {hero && (
+        {/* LEFT CONTENT */}
 
-          <div
-            className="mb-14 relative rounded-3xl overflow-hidden shadow-2xl cursor-pointer group"
-            onClick={() =>
-              window.location.href =
-                `/article/${hero.title.toLowerCase().replace(/\s+/g, "-")}`
-            }
-          >
+        <div className="content-left">
 
-            <img
-              src={
-                hero.image_url ||
-                "https://picsum.photos/1200/600?entertainment"
-              }
-              alt={hero.title}
-              className="w-full h-[500px] object-cover group-hover:scale-105 transition duration-500"
-            />
+          {/* HERO */}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
-
-            <div className="absolute bottom-0 left-0 p-10">
-
-              <span className="bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold">
-                ENTERTAINMENT
-              </span>
-
-              <h1 className="text-5xl font-bold text-white mt-5 leading-tight max-w-4xl">
-                {hero.title}
-              </h1>
-
-            </div>
-
-          </div>
-
-        )}
-
-        {/* SECTION TITLE */}
-        <div className="flex items-center mb-8">
-
-          <div className="w-1 h-10 bg-red-600 rounded-full mr-4"></div>
-
-          <h2 className="text-4xl font-bold text-[#071a52]">
-            Latest Entertainment
-          </h2>
-
-        </div>
-
-        {/* ARTICLES GRID */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-
-          {latest.map((post) => (
+          {hero && (
 
             <div
-              key={post.id}
-              className="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition duration-300 cursor-pointer group"
-              onClick={() =>
-                window.location.href =
-                  `/article/${post.title.toLowerCase().replace(/\s+/g, "-")}`
-              }
+              className="hero-story"
+              onClick={() => openArticle(hero)}
             >
 
-              <div className="overflow-hidden">
+              <div
+                className="hero-image-link"
+                style={{
+                  backgroundImage: `url(${
+                    hero.image ||
+                    hero.image_url ||
+                    "https://picsum.photos/1200/600"
+                  })`,
+                  height: "500px",
+                }}
+              />
 
-                <img
-                  src={
-                    post.image_url ||
-                    "https://picsum.photos/600/380?music"
-                  }
-                  alt={post.title}
-                  className="w-full h-64 object-cover group-hover:scale-110 transition duration-500"
-                />
+              <div className="hero-overlay">
 
-              </div>
-
-              <div className="p-6">
-
-                <span className="inline-block bg-[#071a52] text-white text-xs px-3 py-1 rounded-full mb-4">
+                <span className="badge red">
                   ENTERTAINMENT
                 </span>
 
-                <h3 className="font-bold text-2xl leading-snug text-[#071a52] group-hover:text-red-600 transition">
-                  {post.title}
-                </h3>
+                <h1>{hero.title}</h1>
 
-                <p className="text-gray-600 mt-4 leading-7 line-clamp-3">
-                  {post.content || "Read full entertainment coverage on DanoNews."}
+                <p
+                  style={{
+                    marginTop: "15px",
+                    color: "#eee",
+                    fontSize: "16px",
+                    maxWidth: "700px",
+                  }}
+                >
+                  {hero.description || hero.content}
                 </p>
 
               </div>
 
             </div>
 
-          ))}
+          )}
+
+          {/* LATEST */}
+
+          <div className="section">
+
+            <div className="section-header">
+              <h2>Latest Entertainment News</h2>
+            </div>
+
+            <div className="featured-grid">
+
+              {latest.map((article, i) => (
+
+                <div
+                  key={i}
+                  className="card"
+                  onClick={() => openArticle(article)}
+                >
+
+                  <div
+                    className="card-image"
+                    style={{
+                      backgroundImage: `url(${
+                        article.image ||
+                        article.image_url ||
+                        "https://picsum.photos/600/400"
+                      })`,
+                    }}
+                  />
+
+                  <div className="card-content">
+
+                    <h3>{article.title}</h3>
+
+                    <p
+                      style={{
+                        marginTop: "10px",
+                        color: "#666",
+                        lineHeight: "1.6",
+                      }}
+                    >
+                      {article.description || article.content}
+                    </p>
+
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* SIDEBAR */}
+
+        <div className="sidebar">
+
+          <div className="sidebar-widget">
+
+            <h3>Trending Entertainment</h3>
+
+            {articles.map((article, i) => (
+
+              <div
+                key={i}
+                className="trending-item"
+                onClick={() => openArticle(article)}
+              >
+
+                <div className="trend-number">
+                  {i + 1}
+                </div>
+
+                <div>{article.title}</div>
+
+              </div>
+
+            ))}
+
+          </div>
 
         </div>
 
       </div>
 
     </div>
+
   );
 }

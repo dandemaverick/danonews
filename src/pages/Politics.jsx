@@ -55,7 +55,11 @@ export default function Politics() {
               <div
                 className="hero-image-link"
                 style={{
-                  backgroundImage: `url(${hero.image})`,
+                  backgroundImage: `url(${
+                    hero.image ||
+                    hero.image_url ||
+                    "https://picsum.photos/1200/600"
+                  })`,
                   height: "500px",
                 }}
               />
@@ -82,7 +86,11 @@ export default function Politics() {
                   <div
                     className="card-image"
                     style={{
-                      backgroundImage: `url(${article.image})`,
+                      backgroundImage: `url(${
+                        article.image ||
+                        article.image_url ||
+                        "https://picsum.photos/600/400"
+                      })`,
                     }}
                   />
 

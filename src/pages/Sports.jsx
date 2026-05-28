@@ -109,10 +109,11 @@ export default function Sports() {
       <div className="max-w-7xl mx-auto px-4 py-10">
 
         {hero && (
-          <div
-            onClick={() => openArticle(hero)}
-            className="relative rounded-3xl overflow-hidden cursor-pointer mb-14 shadow-xl"
-          >
+          
+            <div
+              onClick={() => openArticle(hero)}
+              className="relative rounded-3xl overflow-hidden cursor-pointer mb-14 shadow-xl mx-auto max-w-6xl"
+            >
             <img
               src={
                 hero.image_url ||
@@ -148,8 +149,7 @@ export default function Sports() {
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {latest.map((post) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <div
               key={post.id}
               onClick={() => openArticle(post)}

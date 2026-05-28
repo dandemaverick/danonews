@@ -1,4 +1,4 @@
-import "./Article.css";
+import "./article.css";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Article() {
@@ -6,15 +6,52 @@ export default function Article() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // GET ARTICLE
   const article =
-  location.state?.article ||
-  JSON.parse(localStorage.getItem("currentArticle"));
+    location.state?.article ||
+    JSON.parse(localStorage.getItem("currentArticle"));
 
-  // Redirect if article missing
+  // IMAGE HANDLER
+  const image =
+    article?.image ||
+    article?.urlToImage ||
+    article?.image_url ||
+    "https://placehold.co/1200x700?text=DanoNews";
+
+  // LOADING / EMPTY
   if (!article) {
     return (
-      <div className="article-page">
-        <div className="article-container">
+      <div className="article-container">
+        <button onClick={() => navigate("/")}>
+          ← Back Home
+        </button>
+
+        <h2>Article not found</h2>
+      </div>
+    );
+  }
+
+  return (
+
+    <div className="article-page">
+
+      <div className="article-container">
+
+        {/* MAIN IMAGE */}
+
+        <div className="article-image-wrap">
+
+          <img
+            src={image}
+            alt={article.title}
+            className="article-image"
+          />
+
+        </div>
+
+        {/* ARTICLE CONTENT */}
+
+        <div className="article-content">
 
           <button
             className="back-btn"
@@ -23,71 +60,39 @@ export default function Article() {
             ← Back Home
           </button>
 
-          <h1>Article Not Found</h1>
+          <h1>{article.title}</h1>
 
-          <p>
-            This article may have expired or was opened
-            directly without homepage state.
+          <p className="article-description">
+            {article.description}
           </p>
 
-        </div>
-      </div>
-    );
-  }
+          <div className="article-body">
 
-  const image =
-    article.image ||
-    article.urlToImage ||
-    article.image_url ||
-    "https://placehold.co/1200x700?text=DanoNews";
+            <p>
+              {article.content ||
+                article.description ||
+                "Full story coming soon on DanoNews."}
+            </p>
 
-  return (
-    <div className="article-page">
+          </div>
 
-      <div className="article-container">
+          {/* SOURCE LINK */}
 
-        <button
-          className="back-btn"
-          onClick={() => navigate("/")}
-        >
-          ← Back Home
-        </button>
-
-        <img
-          src={image}
-          alt={article.title}
-          className="article-image"
-        />
-
-        <h1 className="article-title">
-          {article.title}
-        </h1>
-
-        <p className="article-description">
-          {article.description ||
-            "No description available."}
-        </p>
-
-        <div className="article-content">
-
-          {article.content ||
-            article.description ||
-            "Full article content unavailable."}
+          {article.url && (
+            <a
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="source-link"
+            >
+              Read Original Source
+            </a>
+          )}
 
         </div>
 
-        {article.url && (
-          <a
-            href={article.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="read-more-btn"
-          >
-            Read Original Source
-          </a>
-        )}
-
       </div>
+
     </div>
   );
 }

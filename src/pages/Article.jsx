@@ -1,199 +1,91 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import "./Article.css";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Article() {
 
-  const { slug } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
 
-  const [article, setArticle] = useState(null);
-  const [related, setRelated] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const article = location.state?.article;
 
-  useEffect(() => {
-    loadArticle();
-  }, [slug]);
-
-  function slugify(text) {
-    return text
-      ?.toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-");
-  }
-
-  async function loadArticle() {
-
-    try {
-
-      setLoading(true);
-
-      const response = await fetch(
-        "http://localhost:5000/api/news"
-      );
-
-      const result = await response.json();
-
-      const posts = result.articles || [];
-
-      const found = posts.find(
-        (item) => slugify(item.title) === slug
-      );
-
-      if (found) {
-
-        setArticle(found);
-
-        const relatedPosts = posts
-          .filter((item) => item.title !== found.title)
-          .slice(0, 4);
-
-        setRelated(relatedPosts);
-      }
-
-    } catch (error) {
-
-      console.log(error);
-
-    } finally {
-
-      setLoading(false);
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="article-loading">
-        Loading article...
-      </div>
-    );
-  }
-
+  // Redirect if article missing
   if (!article) {
     return (
-      <div className="article-loading">
-        Article not found
+      <div className="article-page">
+        <div className="article-container">
+
+          <button
+            className="back-btn"
+            onClick={() => navigate("/")}
+          >
+            ← Back Home
+          </button>
+
+          <h1>Article Not Found</h1>
+
+          <p>
+            This article may have expired or was opened
+            directly without homepage state.
+          </p>
+
+        </div>
       </div>
     );
   }
+
+  const image =
+    article.image ||
+    article.urlToImage ||
+    article.image_url ||
+    "https://placehold.co/1200x700?text=DanoNews";
 
   return (
     <div className="article-page">
 
-      {/* HERO */}
-      <div className="article-hero">
-
-        <img
-          src={
-            article.image ||
-            "https://picsum.photos/1400/700?news"
-          }
-          alt={article.title}
-        />
-
-        <div className="article-overlay">
-
-          <div className="article-hero-content">
-
-            <span className="article-badge">
-              DANONEWS
-            </span>
-
-            <h1>{article.title}</h1>
-
-            <div className="article-meta">
-
-              <span>DanoNews Editorial</span>
-
-              <span>•</span>
-
-              <span>
-                {new Date(
-                  article.publishedAt
-                ).toDateString()}
-              </span>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* BODY */}
       <div className="article-container">
 
-        {/* MAIN ARTICLE */}
-        <div className="article-main">
+        <button
+          className="back-btn"
+          onClick={() => navigate("/")}
+        >
+          ← Back Home
+        </button>
 
-          <div className="article-content">
+        <img
+          src={image}
+          alt={article.title}
+          className="article-image"
+        />
 
-            {(article.content ||
-              article.description ||
-              "")
-              .split(". ")
-              .map((paragraph, index) => (
+        <h1 className="article-title">
+          {article.title}
+        </h1>
 
-                <p key={index}>
-                  {paragraph}.
-                </p>
+        <p className="article-description">
+          {article.description ||
+            "No description available."}
+        </p>
 
-              ))}
+        <div className="article-content">
 
-            {article.url && (
-
-              <a
-                href={article.url}
-                target="_blank"
-                rel="noreferrer"
-                className="source-btn"
-              >
-                Read Original Source
-              </a>
-
-            )}
-
-          </div>
+          {article.content ||
+            article.description ||
+            "Full article content unavailable."}
 
         </div>
 
-        {/* SIDEBAR */}
-        <div className="article-sidebar">
-
-          <h2>Related Stories</h2>
-
-          {related.map((item, index) => (
-
-            <div
-              key={index}
-              className="related-card"
-              onClick={() =>
-                navigate(
-                  `/article/${slugify(item.title)}`
-                )
-              }
-            >
-
-              <img
-                src={
-                  item.image ||
-                  "https://picsum.photos/500/300?news"
-                }
-                alt={item.title}
-              />
-
-              <h3>{item.title}</h3>
-
-            </div>
-
-          ))}
-
-        </div>
+        {article.url && (
+          <a
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="read-more-btn"
+          >
+            Read Original Source
+          </a>
+        )}
 
       </div>
-
     </div>
   );
 }

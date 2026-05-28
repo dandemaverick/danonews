@@ -21,9 +21,27 @@ export default function Home() {
         const data = await getNews("general");
 
         if (data && data.length > 0) {
-          setArticles(data);
+
+          // PRIORITIZE GHANA NEWS
+          const ghanaFirst = [...data].sort((a, b) => {
+
+            const aGhana =
+              a.title?.toLowerCase().includes("ghana") ||
+              a.description?.toLowerCase().includes("ghana");
+
+            const bGhana =
+              b.title?.toLowerCase().includes("ghana") ||
+              b.description?.toLowerCase().includes("ghana");
+
+            return bGhana - aGhana;
+          });
+
+          setArticles(ghanaFirst);
+
         } else {
+
           setArticles(getDemoArticles());
+
         }
 
       } catch (err) {
@@ -57,7 +75,7 @@ export default function Home() {
       description:
         "President John Dramani Mahama introduces comprehensive plan to transform Ghana’s economy.",
       image:
-        "https://picsum.photos/id/1015/1200/630",
+        "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?q=80&w=1200&auto=format&fit=crop",
     },
 
     {
@@ -66,7 +84,7 @@ export default function Home() {
       description:
         "Otto Addo names strong 26-man squad ahead of crucial matches.",
       image:
-        "https://picsum.photos/id/870/600/400",
+        "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
     },
 
     {
@@ -75,7 +93,7 @@ export default function Home() {
       description:
         "Local currency shows strong performance in forex market.",
       image:
-        "https://picsum.photos/id/106/600/400",
+        "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?q=80&w=1200&auto=format&fit=crop",
     },
 
     {
@@ -84,7 +102,7 @@ export default function Home() {
       description:
         "Good news for motorists as global oil prices stabilize.",
       image:
-        "https://picsum.photos/id/201/600/400",
+        "https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=1200&auto=format&fit=crop",
     },
 
   ];
@@ -120,7 +138,9 @@ export default function Home() {
       JSON.stringify(article)
     );
 
-    navigate(`/article/${slug}`);
+    navigate(`/article/${slug}`, {
+      state: { article },
+    });
   };
 
   /* =========================
@@ -130,7 +150,7 @@ export default function Home() {
   if (loading) {
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0f2c] text-white text-2xl">
+      <div className="min-h-screen flex items-center justify-center bg-[#071a52] text-white text-2xl">
         Loading DanoNews...
       </div>
     );
@@ -138,7 +158,7 @@ export default function Home() {
 
   const hero = articles[0];
   const sideStories = articles.slice(1, 3);
-  const latest = articles.slice(2);
+  const latest = articles.slice(3);
 
   return (
 
@@ -176,6 +196,10 @@ export default function Home() {
                   </span>
 
                   <h1>{hero.title}</h1>
+
+                  <p>
+                    {hero.description?.slice(0, 120)}...
+                  </p>
 
                 </div>
 
@@ -241,7 +265,9 @@ export default function Home() {
                     <h3>{article.title}</h3>
 
                     <p>
-                      {article.description?.slice(0, 90)}...
+                      {article.description
+                        ?.slice(0, 100)}
+                      ...
                     </p>
 
                   </div>
@@ -264,7 +290,7 @@ export default function Home() {
 
             <h3>Trending Now</h3>
 
-            {articles.map((article, i) => (
+            {articles.slice(0, 10).map((article, i) => (
 
               <div
                 key={i}

@@ -42,60 +42,82 @@ export default function Admin() {
 
   async function uploadImage(e) {
 
-    const file = e.target.files[0];
+    try {
 
-    if (!file) return;
+      const file = e.target.files[0];
 
-    const fileExt =
-      file.name.split(".").pop();
+      if (!file) return;
 
-    const fileName =
-      `uploads/${Date.now()}.${fileExt}`;
+      /* FILE EXTENSION */
 
-    const { error } = await supabase.storage
-      .from("news-images")
-      .upload(fileName, file, {
-        cacheControl: "3600",
-        upsert: true
-      });
+      const fileExt =
+        file.name.split(".").pop();
 
-    if (error) {
+      /* SAFE FILE NAME */
 
-      console.log(error);
+      const fileName =
+        `${Date.now()}.${fileExt}`;
 
-      alert(error.message);
+      /* UPLOAD TO SUPABASE */
 
-      return;
+      const { error } =
+        await supabase.storage
+          .from("news-images")
+          .upload(fileName, file, {
+            cacheControl: "3600",
+            upsert: false
+          });
+
+      if (error) {
+
+        console.log(error);
+
+        alert(error.message);
+
+        return;
+
+      }
+
+      /* GET PUBLIC URL */
+
+      const {
+        data: { publicUrl }
+      } = supabase.storage
+        .from("news-images")
+        .getPublicUrl(fileName);
+
+      /* SAVE FEATURED IMAGE */
+
+      setImage(publicUrl);
+
+      /* INSERT IMAGE INTO EDITOR */
+
+      if (editorRef.current) {
+
+        editorRef.current.innerHTML += `
+          <p>
+            <img
+              src="${publicUrl}"
+              style="
+                max-width:100%;
+                border-radius:12px;
+                margin:20px 0;
+              "
+            />
+          </p>
+        `;
+
+      }
+
+      alert("Image uploaded successfully");
+
+    } catch (err) {
+
+      console.log(err);
+
+      alert("Upload failed");
 
     }
-
-    const { data } = supabase.storage
-      .from("news-images")
-      .getPublicUrl(fileName);
-
-    const imageUrl =
-      data.publicUrl;
-
-    /* SAVE FEATURED IMAGE */
-
-    setImage(imageUrl);
-
-    /* INSERT IMAGE PREVIEW INTO EDITOR */
-
-    editorRef.current.innerHTML += `
-      <p>
-        <img
-          src="${imageUrl}"
-          style="
-            max-width:100%;
-            border-radius:12px;
-            margin:20px 0;
-          "
-        />
-      </p>
-    `;
-
-    alert("Image uploaded successfully");
 
   }
 
@@ -270,6 +292,7 @@ export default function Admin() {
           >
 
             <button
+              type="button"
               style={toolbarBtn}
               onClick={() => exec("bold")}
             >
@@ -277,6 +300,7 @@ export default function Admin() {
             </button>
 
             <button
+              type="button"
               style={toolbarBtn}
               onClick={() => exec("italic")}
             >
@@ -284,6 +308,7 @@ export default function Admin() {
             </button>
 
             <button
+              type="button"
               style={toolbarBtn}
               onClick={() => exec("underline")}
             >
@@ -291,6 +316,7 @@ export default function Admin() {
             </button>
 
             <button
+              type="button"
               style={toolbarBtn}
               onClick={() =>
                 exec("insertUnorderedList")
@@ -300,6 +326,7 @@ export default function Admin() {
             </button>
 
             <button
+              type="button"
               style={toolbarBtn}
               onClick={() =>
                 exec("formatBlock", "<h2>")
@@ -342,6 +369,7 @@ export default function Admin() {
           {/* UPLOAD BUTTON */}
 
           <button
+            type="button"
             style={grey}
             onClick={openUpload}
           >
@@ -425,6 +453,7 @@ export default function Admin() {
           >
 
             <button
+              type="button"
               style={blue}
               onClick={publishPost}
             >

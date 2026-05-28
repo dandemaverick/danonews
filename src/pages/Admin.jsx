@@ -1,3 +1,4 @@
+```jsx
 // src/pages/Admin.jsx
 
 import { useRef, useState } from "react";
@@ -15,7 +16,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(false);
 
   /* =========================
-     TEXT EDITOR COMMANDS
+     TEXT EDITOR
   ========================= */
 
   function exec(cmd, value = null) {
@@ -27,7 +28,7 @@ export default function Admin() {
   }
 
   /* =========================
-     OPEN FILE PICKER
+     OPEN IMAGE PICKER
   ========================= */
 
   function openUpload() {
@@ -40,141 +41,181 @@ export default function Admin() {
      IMAGE UPLOAD
   ========================= */
 
- async function uploadImage(e) {
+  async function uploadImage(e) {
 
-  try {
+    try {
 
-    const file = e.target.files[0];
+      const file = e.target.files[0];
 
-    if (!file) return;
+      if (!file) return;
 
-    /* FILE EXTENSION */
+      const fileExt =
+        file.name.split(".").pop();
 
-    const fileExt =
-      file.name.split(".").pop();
+      const fileName =
+        `${Date.now()}.${fileExt}`;
 
-    /* SAFE FILE NAME */
+      /* UPLOAD */
 
-    const fileName =
-      `${Date.now()}.${fileExt}`;
+      const { error } =
+        await supabase.storage
+          .from("news-images")
+          .upload(fileName, file);
 
-    /* UPLOAD TO SUPABASE */
+      if (error) {
 
-    const { data, error } =
-      await supabase.storage
+        console.log(error);
+
+        alert(error.message);
+
+        return;
+
+      }
+
+      /* GET URL */
+
+      const {
+        data: publicData
+      } = supabase.storage
         .from("news-images")
-        .upload(fileName, file);
+        .getPublicUrl(fileName);
 
-    if (error) {
+      const publicUrl =
+        publicData.publicUrl;
 
-      console.log(error);
+      /* SAVE IMAGE */
 
-      alert(error.message);
+      setImage(publicUrl);
 
-      return;
+      /* INSERT INTO EDITOR */
 
-    }
+      if (editorRef.current) {
 
-    /* GET PUBLIC URL */
+        editorRef.current.innerHTML += `
+          <p>
+            <img
+              src="${publicUrl}"
+              style="
+                max-width:100%;
+                border-radius:12px;
+                margin:20px 0;
+              "
+            />
+          </p>
+        `;
 
-    const {
-      data: publicData
-    } = supabase.storage
-      .from("news-images")
-      .getPublicUrl(fileName);
+      }
 
-    const publicUrl =
-      publicData.publicUrl;
+      alert("Image uploaded successfully");
 
-    /* SAVE IMAGE */
+    } catch (err) {
 
-    setImage(publicUrl);
+      console.log(err);
 
-    /* INSERT INTO EDITOR */
-
-    if (editorRef.current) {
-
-      editorRef.current.innerHTML += `
-        <p>
-          <img
-            src="${publicUrl}"
-            style="
-              max-width:100%;
-              border-radius:12px;
-              margin:20px 0;
-            "
-          />
-        </p>
-      `;
+      alert("Upload failed");
 
     }
-
-    alert("Image uploaded successfully");
-
-  } catch (err) {
-
-    console.log(err);
-
-    alert("Upload failed");
 
   }
 
-}
   /* =========================
      PUBLISH ARTICLE
   ========================= */
 
   async function publishPost() {
 
-    const body =
-      editorRef.current.innerHTML;
+    try {
 
-    if (!title || !body || !image) {
+      const body =
+        editorRef.current.innerHTML;
 
-      alert("Title, content and image required");
+      if (!title || !body || !image) {
 
-      return;
+        alert("Title, content and image required");
+
+        return;
+
+      }
+
+      setLoading(true);
+
+      /* SAFE SLUG */
+
+      const slug =
+        title
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-")
+          .trim();
+
+      /* INSERT */
+
+      const { error } = await supabase
+        .from("posts")
+        .insert([
+          {
+            title: title,
+
+            cat: cat,
+
+            body: body,
+
+            content: body,
+
+            image_url: image,
+
+            image: image,
+
+            sponsored: sponsored,
+
+            author: "DanoNews Staff",
+
+            slug: slug,
+
+            status: "published",
+
+            views: 0,
+
+            is_breaking: false
+          }
+        ]);
+
+      setLoading(false);
+
+      if (error) {
+
+        console.log(error);
+
+        alert(error.message);
+
+        return;
+
+      }
+
+      alert("Published Successfully");
+
+      /* RESET */
+
+      setTitle("");
+
+      setImage("");
+
+      setCat("News");
+
+      setSponsored(false);
+
+      editorRef.current.innerHTML = "";
+
+    } catch (err) {
+
+      console.log(err);
+
+      alert("Publishing failed");
+
+      setLoading(false);
 
     }
-
-    setLoading(true);
-
-    const { error } = await supabase
-      .from("posts")
-      .insert([
-        {
-          title,
-          body,
-          image_url:
-            image ||
-            "https://placehold.co/1200x700?text=DanoNews",
-          category: cat,
-          sponsored
-        }
-      ]);
-
-    setLoading(false);
-
-    if (error) {
-
-      console.log(error);
-
-      alert(error.message);
-
-      return;
-
-    }
-
-    alert("Published Successfully");
-
-    /* RESET FORM */
-
-    setTitle("");
-    setImage("");
-    setCat("News");
-    setSponsored(false);
-
-    editorRef.current.innerHTML = "";
 
   }
 
@@ -246,7 +287,7 @@ export default function Admin() {
 
       </div>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN */}
 
       <div style={{ padding: "35px" }}>
 
@@ -324,16 +365,6 @@ export default function Admin() {
               Bullet List
             </button>
 
-            <button
-              type="button"
-              style={toolbarBtn}
-              onClick={() =>
-                exec("formatBlock", "<h2>")
-              }
-            >
-              H2
-            </button>
-
           </div>
 
           {/* EDITOR */}
@@ -354,7 +385,7 @@ export default function Admin() {
             }}
           />
 
-          {/* FEATURED IMAGE */}
+          {/* IMAGE URL */}
 
           <input
             placeholder="Featured image URL..."
@@ -365,7 +396,7 @@ export default function Admin() {
             style={input}
           />
 
-          {/* UPLOAD BUTTON */}
+          {/* UPLOAD */}
 
           <button
             type="button"
@@ -434,10 +465,6 @@ export default function Admin() {
               Mark as Sponsored Post
 
             </label>
-
-            <small style={{ color: "#777" }}>
-              Paid client content will show Sponsored badges
-            </small>
 
           </div>
 
@@ -514,3 +541,4 @@ const toolbarBtn = {
   cursor: "pointer",
   fontWeight: "600"
 };
+```

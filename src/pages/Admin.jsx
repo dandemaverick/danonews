@@ -1,11 +1,9 @@
-```jsx
 // src/pages/Admin.jsx
 
 import { useRef, useState } from "react";
 import { supabase } from "../services/supabase";
 
 export default function Admin() {
-
   const editorRef = useRef(null);
   const fileRef = useRef(null);
 
@@ -18,233 +16,158 @@ export default function Admin() {
   /* =========================
      TEXT EDITOR
   ========================= */
-
   function exec(cmd, value = null) {
-
     document.execCommand(cmd, false, value);
-
-    editorRef.current.focus();
-
+    editorRef.current?.focus();
   }
 
   /* =========================
      OPEN IMAGE PICKER
   ========================= */
-
   function openUpload() {
-
     fileRef.current.click();
-
   }
 
   /* =========================
      IMAGE UPLOAD
   ========================= */
-
   async function uploadImage(e) {
-
     try {
-
       const file = e.target.files[0];
-
       if (!file) return;
 
-      const fileExt =
-        file.name.split(".").pop();
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
 
-      const fileName =
-        `${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from("news-images")
+        .upload(fileName, file);
 
-      /* UPLOAD */
-
-      const { error } =
-        await supabase.storage
-          .from("news-images")
-          .upload(fileName, file);
-
-      if (error) {
-
-        console.log(error);
-
-        alert(error.message);
-
+      if (uploadError) {
+        console.error(uploadError);
+        alert("Upload failed: " + uploadError.message);
         return;
-
       }
 
-      /* GET URL */
-
-      const {
-        data: publicData
-      } = supabase.storage
+      const { data: publicData } = supabase.storage
         .from("news-images")
         .getPublicUrl(fileName);
 
-      const publicUrl =
-        publicData.publicUrl;
-
-      /* SAVE IMAGE */
+      const publicUrl = publicData.publicUrl;
 
       setImage(publicUrl);
 
-      /* INSERT INTO EDITOR */
-
       if (editorRef.current) {
-
         editorRef.current.innerHTML += `
           <p>
-            <img
-              src="${publicUrl}"
-              style="
-                max-width:100%;
-                border-radius:12px;
-                margin:20px 0;
-              "
+            <img 
+              src="${publicUrl}" 
+              alt="${title || "News image"}"
+              style="max-width:100%; border-radius:12px; margin:20px 0;"
             />
           </p>
         `;
-
       }
 
-      alert("Image uploaded successfully");
-
+      alert("✅ Image uploaded successfully");
     } catch (err) {
-
-      console.log(err);
-
-      alert("Upload failed");
-
+      console.error(err);
+      alert("Image upload failed");
     }
-
   }
 
   /* =========================
      PUBLISH ARTICLE
   ========================= */
-
   async function publishPost() {
-
     try {
+      const body = editorRef.current?.innerHTML || "";
 
-      const body =
-        editorRef.current.innerHTML;
-
-      if (!title || !body || !image) {
-
-        alert("Title, content and image required");
-
+      if (!title.trim()) {
+        alert("❌ Title is required");
         return;
-
+      }
+      if (!body || body.trim() === "<p><br></p>") {
+        alert("❌ Please write some content in the editor");
+        return;
+      }
+      if (!image) {
+        alert("❌ Featured image is required");
+        return;
       }
 
       setLoading(true);
 
-      /* SAFE SLUG */
+      // Generate slug
+      const slug = title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .trim();
 
-      const slug =
-        title
-          .toLowerCase()
-          .replace(/[^a-z0-9\s-]/g, "")
-          .replace(/\s+/g, "-")
-          .replace(/-+/g, "-")
-          .trim();
-
-      /* INSERT */
-
-      const { error } = await supabase
-        .from("posts")
-        .insert([
-          {
-            title: title,
-
-            cat: cat,
-
-            body: body,
-
-            content: body,
-
-            image_url: image,
-
-            image: image,
-
-            sponsored: sponsored,
-
-            author: "DanoNews Staff",
-
-            slug: slug,
-
-            status: "published",
-
-            views: 0,
-
-            is_breaking: false
-          }
-        ]);
+      const { error } = await supabase.from("posts").insert([
+        {
+          title: title.trim(),
+          cat: cat,                    // ✅ Correct column
+          body: body,
+          content: body,
+          image_art: image,            // ✅ Correct column
+          image: image,                // ✅ Also storing in image column
+          sponsored: sponsored,
+          writer: "DanoNews Staff",    // ✅ Correct column
+          slug: slug,
+          status: "published",
+          views: 0,
+          is_breaking: false,
+        },
+      ]);
 
       setLoading(false);
 
       if (error) {
-
-        console.log(error);
-
-        alert(error.message);
-
+        console.error("Supabase Error:", error);
+        alert("Error: " + error.message);
         return;
-
       }
 
-      alert("Published Successfully");
+      alert("✅ Article Published Successfully!");
 
-      /* RESET */
-
+      // Reset form
       setTitle("");
-
       setImage("");
-
       setCat("News");
-
       setSponsored(false);
-
-      editorRef.current.innerHTML = "";
-
+      if (editorRef.current) editorRef.current.innerHTML = "";
     } catch (err) {
-
-      console.log(err);
-
+      console.error(err);
       alert("Publishing failed");
-
       setLoading(false);
-
     }
-
   }
 
   return (
-
     <div
       style={{
         display: "grid",
         gridTemplateColumns: "240px 1fr",
         minHeight: "100vh",
-        background: "#f5f6fa"
+        background: "#f5f6fa",
       }}
     >
-
       {/* SIDEBAR */}
-
       <div
         style={{
           background: "#fff",
           borderRight: "1px solid #eee",
-          padding: "30px 20px"
+          padding: "30px 20px",
         }}
       >
-
         <h2
           style={{
             color: "#e00000",
             fontSize: "34px",
-            marginBottom: "30px"
+            marginBottom: "30px",
           }}
         >
           DanoCMS
@@ -257,69 +180,44 @@ export default function Admin() {
           "Categories",
           "Analytics",
           "Monetization",
-          "Settings"
+          "Settings",
         ].map((item, i) => (
-
           <div
             key={item}
             style={{
               padding: "14px",
               marginTop: "8px",
               borderRadius: "8px",
-              background:
-                i === 1
-                  ? "#fff0f0"
-                  : "transparent",
-
-              color:
-                i === 1
-                  ? "#e00000"
-                  : "#333",
-
+              background: i === 1 ? "#fff0f0" : "transparent",
+              color: i === 1 ? "#e00000" : "#333",
               fontWeight: "600",
-              cursor: "pointer"
+              cursor: "pointer",
             }}
           >
             {item}
           </div>
-
         ))}
-
       </div>
 
-      {/* MAIN */}
-
+      {/* MAIN CONTENT */}
       <div style={{ padding: "35px" }}>
-
         <div
           style={{
             background: "#fff",
             borderRadius: "14px",
-            padding: "30px"
+            padding: "30px",
           }}
         >
-
-          <h2
-            style={{
-              color: "#0d2b6b",
-              marginBottom: "20px"
-            }}
-          >
+          <h2 style={{ color: "#0d2b6b", marginBottom: "20px" }}>
             Create Article
           </h2>
-
-          {/* TITLE */}
 
           <input
             placeholder="Add title..."
             value={title}
-            onChange={(e) =>
-              setTitle(e.target.value)
-            }
+            onChange={(e) => setTitle(e.target.value)}
             style={input}
           />
-
-          {/* TOOLBAR */}
 
           <div
             style={{
@@ -327,47 +225,26 @@ export default function Admin() {
               gap: "10px",
               marginTop: "15px",
               marginBottom: "10px",
-              flexWrap: "wrap"
+              flexWrap: "wrap",
             }}
           >
-
-            <button
-              type="button"
-              style={toolbarBtn}
-              onClick={() => exec("bold")}
-            >
+            <button type="button" style={toolbarBtn} onClick={() => exec("bold")}>
               Bold
             </button>
-
-            <button
-              type="button"
-              style={toolbarBtn}
-              onClick={() => exec("italic")}
-            >
+            <button type="button" style={toolbarBtn} onClick={() => exec("italic")}>
               Italic
             </button>
-
-            <button
-              type="button"
-              style={toolbarBtn}
-              onClick={() => exec("underline")}
-            >
+            <button type="button" style={toolbarBtn} onClick={() => exec("underline")}>
               Underline
             </button>
-
             <button
               type="button"
               style={toolbarBtn}
-              onClick={() =>
-                exec("insertUnorderedList")
-              }
+              onClick={() => exec("insertUnorderedList")}
             >
               Bullet List
             </button>
-
           </div>
-
-          {/* EDITOR */}
 
           <div
             ref={editorRef}
@@ -381,28 +258,18 @@ export default function Admin() {
               outline: "none",
               fontSize: "18px",
               lineHeight: "1.8",
-              marginTop: "15px"
+              marginTop: "15px",
             }}
           />
-
-          {/* IMAGE URL */}
 
           <input
             placeholder="Featured image URL..."
             value={image}
-            onChange={(e) =>
-              setImage(e.target.value)
-            }
+            onChange={(e) => setImage(e.target.value)}
             style={input}
           />
 
-          {/* UPLOAD */}
-
-          <button
-            type="button"
-            style={grey}
-            onClick={openUpload}
-          >
+          <button type="button" style={grey} onClick={openUpload}>
             Upload Image
           </button>
 
@@ -414,13 +281,9 @@ export default function Admin() {
             onChange={uploadImage}
           />
 
-          {/* CATEGORY */}
-
           <select
             value={cat}
-            onChange={(e) =>
-              setCat(e.target.value)
-            }
+            onChange={(e) => setCat(e.target.value)}
             style={input}
           >
             <option>News</option>
@@ -431,86 +294,46 @@ export default function Admin() {
             <option>World</option>
           </select>
 
-          {/* SPONSORED */}
-
           <div
             style={{
               marginTop: "18px",
               padding: "14px",
               background: "#fff8e8",
               borderRadius: "8px",
-              border: "1px solid #ffe2a8"
+              border: "1px solid #ffe2a8",
             }}
           >
-
-            <label
-              style={{
-                display: "flex",
-                gap: "10px",
-                alignItems: "center",
-                fontWeight: "700"
-              }}
-            >
-
+            <label style={{ display: "flex", gap: "10px", alignItems: "center", fontWeight: "700" }}>
               <input
                 type="checkbox"
                 checked={sponsored}
-                onChange={(e) =>
-                  setSponsored(
-                    e.target.checked
-                  )
-                }
+                onChange={(e) => setSponsored(e.target.checked)}
               />
-
               Mark as Sponsored Post
-
             </label>
-
           </div>
 
-          {/* PUBLISH */}
-
-          <div
-            style={{
-              marginTop: "25px",
-              display: "flex",
-              justifyContent: "flex-end"
-            }}
-          >
-
-            <button
-              type="button"
-              style={blue}
-              onClick={publishPost}
-            >
-              {loading
-                ? "Publishing..."
-                : "Publish Now"}
+          <div style={{ marginTop: "25px", display: "flex", justifyContent: "flex-end" }}>
+            <button type="button" style={blue} onClick={publishPost} disabled={loading}>
+              {loading ? "Publishing..." : "Publish Now"}
             </button>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
-
   );
-
 }
 
 /* =========================
    STYLES
 ========================= */
-
 const input = {
   width: "100%",
   padding: "14px",
   borderRadius: "8px",
   border: "1px solid #ddd",
   marginTop: "15px",
-  fontSize: "16px"
+  fontSize: "16px",
 };
 
 const grey = {
@@ -520,7 +343,7 @@ const grey = {
   borderRadius: "8px",
   fontWeight: "700",
   cursor: "pointer",
-  marginTop: "10px"
+  marginTop: "10px",
 };
 
 const blue = {
@@ -530,7 +353,7 @@ const blue = {
   color: "#fff",
   borderRadius: "8px",
   fontWeight: "700",
-  cursor: "pointer"
+  cursor: "pointer",
 };
 
 const toolbarBtn = {
@@ -539,6 +362,5 @@ const toolbarBtn = {
   background: "#fff",
   borderRadius: "8px",
   cursor: "pointer",
-  fontWeight: "600"
+  fontWeight: "600",
 };
-```

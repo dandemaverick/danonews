@@ -40,87 +40,86 @@ export default function Admin() {
      IMAGE UPLOAD
   ========================= */
 
-  async function uploadImage(e) {
+ async function uploadImage(e) {
 
-    try {
+  try {
 
-      const file = e.target.files[0];
+    const file = e.target.files[0];
 
-      if (!file) return;
+    if (!file) return;
 
-      /* FILE EXTENSION */
+    /* FILE EXTENSION */
 
-      const fileExt =
-        file.name.split(".").pop();
+    const fileExt =
+      file.name.split(".").pop();
 
-      /* SAFE FILE NAME */
+    /* SAFE FILE NAME */
 
-      const fileName =
-        `${Date.now()}.${fileExt}`;
+    const fileName =
+      `${Date.now()}.${fileExt}`;
 
-      /* UPLOAD TO SUPABASE */
+    /* UPLOAD TO SUPABASE */
 
-      const { error } =
-        await supabase.storage
-          .from("news-images")
-          .upload(fileName, file, {
-            cacheControl: "3600",
-            upsert: false
-          });
-
-      if (error) {
-
-        console.log(error);
-
-        alert(error.message);
-
-        return;
-
-      }
-
-      /* GET PUBLIC URL */
-
-      const {
-        data: { publicUrl }
-      } = supabase.storage
+    const { data, error } =
+      await supabase.storage
         .from("news-images")
-        .getPublicUrl(fileName);
+        .upload(fileName, file);
 
-      /* SAVE FEATURED IMAGE */
+    if (error) {
 
-      setImage(publicUrl);
+      console.log(error);
 
-      /* INSERT IMAGE INTO EDITOR */
+      alert(error.message);
 
-      if (editorRef.current) {
-
-        editorRef.current.innerHTML += `
-          <p>
-            <img
-              src="${publicUrl}"
-              style="
-                max-width:100%;
-                border-radius:12px;
-                margin:20px 0;
-              "
-            />
-          </p>
-        `;
-
-      }
-
-      alert("Image uploaded successfully");
-
-    } catch (err) {
-
-      console.log(err);
-
-      alert("Upload failed");
+      return;
 
     }
 
+    /* GET PUBLIC URL */
+
+    const {
+      data: publicData
+    } = supabase.storage
+      .from("news-images")
+      .getPublicUrl(fileName);
+
+    const publicUrl =
+      publicData.publicUrl;
+
+    /* SAVE IMAGE */
+
+    setImage(publicUrl);
+
+    /* INSERT INTO EDITOR */
+
+    if (editorRef.current) {
+
+      editorRef.current.innerHTML += `
+        <p>
+          <img
+            src="${publicUrl}"
+            style="
+              max-width:100%;
+              border-radius:12px;
+              margin:20px 0;
+            "
+          />
+        </p>
+      `;
+
+    }
+
+    alert("Image uploaded successfully");
+
+  } catch (err) {
+
+    console.log(err);
+
+    alert("Upload failed");
+
   }
 
+}
   /* =========================
      PUBLISH ARTICLE
   ========================= */

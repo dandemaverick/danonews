@@ -40,42 +40,50 @@ export default function Admin() {
      IMAGE UPLOAD
   ========================= */
 
-  async function uploadImage(e) {
+ async function uploadImage(e) {
 
-    const file = e.target.files[0];
+  const file = e.target.files[0];
 
-    if (!file) return;
+  if (!file) return;
 
-    const fileExt =
-      file.name.split(".").pop();
+  const fileExt =
+    file.name.split(".").pop();
 
-    const fileName =
-      `${Date.now()}.${fileExt}`;
+  const fileName =
+    `uploads/${Date.now()}.${fileExt}`;
 
-    const { error } = await supabase.storage
-      .from("news-images")
-      .upload(fileName, file, {
-        cacheControl: "3600",
-        upsert: false
-      });
+  const { data, error } = await supabase.storage
+    .from("news-images")
+    .upload(fileName, file, {
+      cacheControl: "3600",
+      upsert: true
+    });
 
-    if (error) {
+  if (error) {
 
-      console.log(error);
+    console.log(error);
 
-      alert(error.message);
+    alert(error.message);
 
-      return;
+    return;
 
-    }
+  }
 
-    const { data } = supabase.storage
+  const { data: publicData } =
+    supabase.storage
       .from("news-images")
       .getPublicUrl(fileName);
 
-    const url = data.publicUrl;
+  const imageUrl =
+    publicData.publicUrl;
 
-    setImage(url);
+  setImage(imageUrl);
+
+  exec("insertImage", imageUrl);
+
+  alert("Image uploaded successfully");
+
+}
 
     /* INSERT IMAGE INTO ARTICLE */
 

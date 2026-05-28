@@ -46,12 +46,18 @@ export default function Admin() {
 
     if (!file) return;
 
+    const fileExt =
+      file.name.split(".").pop();
+
     const fileName =
-      `${Date.now()}-${file.name}`;
+      `${Date.now()}.${fileExt}`;
 
     const { error } = await supabase.storage
       .from("news-images")
-      .upload(fileName, file);
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: false
+      });
 
     if (error) {
 
@@ -88,9 +94,9 @@ export default function Admin() {
     const body =
       editorRef.current.innerHTML;
 
-    if (!title || !body) {
+    if (!title || !body || !image) {
 
-      alert("Title and content required");
+      alert("Title, content and image required");
 
       return;
 
@@ -104,7 +110,9 @@ export default function Admin() {
         {
           title,
           body,
-          image_url: image,
+          image_url:
+            image ||
+            "https://placehold.co/1200x700?text=DanoNews",
           category: cat,
           sponsored
         }
@@ -191,7 +199,8 @@ export default function Admin() {
                   ? "#e00000"
                   : "#333",
 
-              fontWeight: "600"
+              fontWeight: "600",
+              cursor: "pointer"
             }}
           >
             {item}
@@ -227,6 +236,40 @@ export default function Admin() {
             }
             style={input}
           />
+
+          {/* TOOLBAR */}
+
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              marginTop: "15px",
+              marginBottom: "10px",
+              flexWrap: "wrap"
+            }}
+          >
+
+            <button style={toolbarBtn} onClick={() => exec("bold")}>
+              Bold
+            </button>
+
+            <button style={toolbarBtn} onClick={() => exec("italic")}>
+              Italic
+            </button>
+
+            <button style={toolbarBtn} onClick={() => exec("underline")}>
+              Underline
+            </button>
+
+            <button style={toolbarBtn} onClick={() => exec("insertUnorderedList")}>
+              Bullet List
+            </button>
+
+            <button style={toolbarBtn} onClick={() => exec("formatBlock", "<h2>")}>
+              H2
+            </button>
+
+          </div>
 
           {/* EDITOR */}
 
@@ -372,7 +415,8 @@ const input = {
   padding: "14px",
   borderRadius: "8px",
   border: "1px solid #ddd",
-  marginTop: "15px"
+  marginTop: "15px",
+  fontSize: "16px"
 };
 
 const grey = {
@@ -393,4 +437,13 @@ const blue = {
   borderRadius: "8px",
   fontWeight: "700",
   cursor: "pointer"
+};
+
+const toolbarBtn = {
+  padding: "10px 16px",
+  border: "1px solid #ddd",
+  background: "#fff",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontWeight: "600"
 };

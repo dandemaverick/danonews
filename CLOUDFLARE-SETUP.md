@@ -4,6 +4,8 @@ This branch replaces the old React/Vite + Express implementation with the redesi
 
 ## 1. Install and prepare
 
+For DanoNews, `danonews-db`, `danonews-images`, and the Access application have already been created. Database and storage bindings are saved in this branch. Skip the resource-creation commands for this account; they are included below for a fresh installation.
+
 Use Node.js 22.13 or newer. Open a terminal in this project folder:
 
 ```sh
@@ -16,7 +18,7 @@ pnpm exec wrangler r2 bucket create danonews-images
 
 Use the browser window opened by Wrangler to sign in to your own Cloudflare account. Do not paste credentials into chat. Enable R2 in your account if Cloudflare requests it. Review any account-level billing requirements before enabling services.
 
-Copy the database ID printed by the D1 create command into `wrangler.jsonc`, replacing `00000000-0000-4000-8000-000000000000`. Keep the binding names `DB` and `BUCKET` exactly as written.
+For a fresh installation, copy the database ID printed by the D1 create command into `wrangler.jsonc`. Keep the binding names `DB` and `BUCKET` exactly as written.
 
 ## 2. Configure administrator login
 
@@ -31,15 +33,17 @@ For the hostname you will deploy on (for example `danonews.com`), add these prot
 
 Allow only the administrator email address(es) you choose. Email one-time PIN is suitable if you do not already use another supported identity provider. Do not choose an Everyone policy. Leave the homepage, category pages, `/article/*`, `/api/news`, and `/api/images/*` public.
 
-Copy these account-specific settings into the `vars` object in `wrangler.jsonc`:
+Keep login settings out of the public repository. After the first Worker deployment, open **Workers & Pages → danonews → Settings → Variables and Secrets → Add**. Add each setting below with type **Secret**, then select **Deploy**:
 
 | Setting | Value |
 | --- | --- |
 | `ACCESS_TEAM_DOMAIN` | Your full team origin, such as `https://your-team.cloudflareaccess.com` |
 | `ACCESS_AUD` | The Application Audience (AUD) tag of `DanoNews Newsroom` |
-| `ADMIN_EMAILS` | A comma-separated list of the same administrator emails allowed by Access |
+| `ADMIN_EMAILS` | A comma-separated list of the same administrator emails allowed by Access, or `sha256:` followed by each lowercased email's SHA-256 digest |
 
-These values are configuration, not passwords. If the repository is public and you do not want to commit your email address, keep your personalised configuration local and use Wrangler from your computer. The package deliberately contains no real email or account ID.
+These are Worker runtime secrets, not build variables. The initial deployment can serve public news while the newsroom remains locked until these settings are supplied. Cloudflare Access's policy must contain the actual administrator email address. A hash, if used, does not replace Access sign-in or signature verification.
+
+Alternatively, from an authenticated local terminal after deployment, run `pnpm exec wrangler secret put ACCESS_TEAM_DOMAIN`, `pnpm exec wrangler secret put ACCESS_AUD`, and `pnpm exec wrangler secret put ADMIN_EMAILS`, entering each value at the prompt. Wrangler preserves existing secrets on later code deployments. `keep_vars` also preserves any runtime variables configured through the dashboard.
 
 Requests still need a valid signature, correct issuer and audience, an unexpired token, and an allowlisted email. Setting forged ChatGPT or Cloudflare headers does not grant admin access. If Access or these settings are missing, publishing stays locked.
 
@@ -53,7 +57,7 @@ pnpm run build
 pnpm run deploy
 ```
 
-The migration creates new D1 tables. It does not connect to or delete your existing Supabase data. The deploy script refuses to run with the placeholder database ID or missing authentication configuration.
+The migration creates new D1 tables. It does not connect to or delete your existing Supabase data. The deploy script refuses to run with the placeholder database ID. Configure the three runtime secrets after the first deployment; publishing stays locked until configuration and Access sign-in both succeed.
 
 Wrangler prints your deployed URL. Public reading works on the workers.dev URL; use the hostname protected by your Access application for administrator sign-in. If you need admin access on a workers.dev hostname too, configure Access for that hostname and include it in the same application/audience where supported.
 
@@ -65,9 +69,9 @@ Open `/admin` on the protected hostname. Cloudflare Access handles sign-in. Afte
 
 ## 5. GitHub automatic deployments (optional)
 
-After reviewing and merging the `cloudflare-redesign` branch, connect `dandemaverick/danonews` from **Workers & Pages → Create application → Import a repository**.
+Connect `dandemaverick/danonews` from **Workers & Pages → Create application → Import a repository**, selecting `cloudflare-redesign` as the production branch. After the pull request is reviewed and merged, you can switch the production branch to `main`.
 
-Use the repository root, Node 22 or newer, install command `pnpm install --frozen-lockfile`, build command `pnpm run build`, and deploy command `pnpm run db:migrate:remote && pnpm run deploy`. Provision D1/R2 and fill the account-specific configuration before enabling a successful automatic deployment. Preserve the project's pinned package manager and lockfile. Do not set a Pages output directory.
+Use the repository root, Node 22.13 or newer, install command `pnpm install --frozen-lockfile`, build command `pnpm run build`, and deploy command `pnpm run db:migrate:remote && pnpm run deploy`. The deployment API token needs **Account → D1 → Edit** for the migration, in addition to the Workers and R2 permissions. Preserve the project's pinned package manager and lockfile. Do not set a Pages output directory.
 
 If the connected build token lacks D1 migration permission, apply migrations manually using the command in step 3 and use `pnpm run deploy` as the deploy command. Migrations must be applied before the new application serves requests.
 
@@ -82,11 +86,13 @@ If the connected build token lacks D1 migration permission, apply migrations man
 
 Automatic news checks occur on page load and every five minutes while the page is visible, with a ten-minute server cache. External stories open at the original publisher. Publisher availability and syndication/image permissions still apply. No paid news API key is needed for the configured feeds.
 
-## What has not been done for you
+## Remaining deployment work
 
-Account resources, Access application, DNS changes, and deployment to your own Cloudflare account require your authenticated account. No existing live site has been replaced. Legacy Supabase article migration requires a separate export/import step.
+The D1 database, R2 bucket, and Access application have been created in the owner's account. Remote database migrations, the first Worker deployment, runtime secret configuration, custom-domain routing, and live administrator verification are still pending. No existing live site has been replaced. Legacy Supabase article migration requires a separate export/import step.
 
 Official references:
 - https://developers.cloudflare.com/workers/vite-plugin/
+- https://developers.cloudflare.com/workers/configuration/secrets/
+- https://developers.cloudflare.com/workers/wrangler/configuration/
 - https://developers.cloudflare.com/d1/wrangler-commands/
 - https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/

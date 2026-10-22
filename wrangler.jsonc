@@ -8,7 +8,7 @@
   "d1_databases": [{
     "binding": "DB",
     "database_name": "danonews-db",
-    "database_id": "00000000-0000-4000-8000-000000000000",
+    "database_id": "c988c152-0fd9-4ccd-bc12-be9f8a86fbac",
     "migrations_dir": "drizzle"
   }],
   "r2_buckets": [{"binding": "BUCKET", "bucket_name": "danonews-images"}],

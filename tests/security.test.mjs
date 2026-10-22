@@ -1,0 +1,14 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {stripTypeScriptTypes} from 'node:module';
+const importTS=async path=>{let s=fs.readFileSync(path,'utf8').replace(/^import .*;$/gm,'');return import('data:text/javascript;base64,'+Buffer.from(stripTypeScriptTypes('const {env,adminUser,sameOrigin,categories,rowArticle,slugify,snapshot}=globalThis.__newsTest;\n'+s)).toString('base64'))};
+let signedIn=false,writes=[];
+globalThis.__newsTest={env:{DB:{prepare(sql){return {bind(...args){return {first:async()=>null,run:async()=>{writes.push({sql,args});return {}},all:async()=>({results:[]})}},all:async()=>({results:[]})}}}},adminUser:async()=>signedIn?{userId:'test'}:null,sameOrigin:req=>req.headers.get('origin')===new URL(req.url).origin,categories:['Ghana','Politics','Sports','Entertainment','Business','World'],rowArticle:r=>r,slugify:s=>s.toLowerCase().replace(/\W+/g,'-'),snapshot:{feeds:[]}};
+// Import the real route handlers with only their infrastructure dependencies substituted.
+const posts=await importTS(new URL('../app/api/posts/route.ts',import.meta.url));
+const article={title:'A test headline',body:'A meaningful test article with enough text for publication.',description:'A test summary',category:'Ghana',author:'Test',image:'',imageAlt:'',credit:'',status:'published'};
+const req=(body,origin='https://test.local')=>new Request('https://test.local/api/posts',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:JSON.stringify(body)});
+test('signed-out readers cannot list drafts or publish',async()=>{signedIn=false;assert.equal((await posts.GET()).status,401);assert.equal((await posts.POST(req(article))).status,403);assert.equal(writes.length,0)});
+test('cross-origin writes fail even for an administrator',async()=>{signedIn=true;assert.equal((await posts.POST(req(article,'https://other.local'))).status,403);assert.equal(writes.length,0)});
+test('invalid fields and unsafe image URLs fail',async()=>{signedIn=true;assert.equal((await posts.POST(req({...article,category:'unknown'}))).status,400);assert.equal((await posts.POST(req({...article,image:'javascript:alert(1)'}))).status,400);assert.equal(writes.length,0)});
+test('valid published article is persisted with stable generated identity',async()=>{signedIn=true;const r=await posts.POST(req(article));assert.equal(r.status,200);const data=await r.json();assert.match(data.slug,/a-test-headline-/);assert.equal(data.status,'published');assert.equal(writes.length,1);assert.ok(writes[0].args.includes('published'))});
+test('updates to nonexistent articles do not insert a replacement',async()=>{assert.equal((await posts.POST(req({...article,id:'missing'}))).status,404);assert.equal(writes.length,1)});
+test('invalid JSON is rejected',async()=>{assert.equal((await posts.POST(new Request('https://test.local/api/posts',{method:'POST',headers:{origin:'https://test.local'},body:'{'}))).status,400)});

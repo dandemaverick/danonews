@@ -63,7 +63,9 @@ Wrangler prints your deployed URL. Public reading works on the workers.dev URL; 
 
 ## 4. Connect danonews.com
 
-The Wrangler configuration manages `danonews.com` and `www.danonews.com` as custom domains for this Worker. Deploying attaches both hostnames and creates their DNS records and certificates. In a non-interactive build, Wrangler replaces conflicting website DNS records for these exact hostnames; review existing hosting before deploying this configuration into another account.
+The Wrangler configuration manages `danonews.com` and `www.danonews.com` as custom domains for this Worker. Before deploying, remove conflicting legacy hosting DNS records for either hostname being migrated. Cloudflare rejects custom-domain creation when externally managed A or CNAME records remain, including in non-interactive builds (error `100117`). Once those conflicts are removed, deploying attaches both hostnames and creates their DNS records and certificates.
+
+For this migration, the remaining conflict is the legacy `www` CNAME pointing to `cname.vercel-dns.com`. Remove that record under **danonews.com → DNS → Records**, preserving the existing Worker-managed apex record, then retry the deployment. A build can successfully compile and upload the Worker before failing at this domain-attachment step; changing dependencies or application code will not resolve this DNS conflict.
 
 The Worker redirects `www.danonews.com` to `https://danonews.com` with status 308, preserving the path and query string. Configure the newsroom's Cloudflare Access paths on `danonews.com` and use that canonical hostname for administration. The dashboard also exposes the domain configuration under the Worker's **Domains** tab.
 

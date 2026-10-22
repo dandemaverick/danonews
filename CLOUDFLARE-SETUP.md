@@ -69,7 +69,9 @@ Open `/admin` on the protected hostname. Cloudflare Access handles sign-in. Afte
 
 ## 5. GitHub automatic deployments (optional)
 
-Connect `dandemaverick/danonews` from **Workers & Pages → Create application → Import a repository**, selecting `cloudflare-redesign` as the production branch. After the pull request is reviewed and merged, you can switch the production branch to `main`.
+Connect `dandemaverick/danonews` from **Workers & Pages → Create application → Import a repository**. The production branch must be `cloudflare-redesign` while this pull request remains unmerged. If the creation form does not expose a branch selector, open the created Worker, go to **Settings → Builds → Production branch** (also called **Branch control**), and select `cloudflare-redesign`. The first attempt on the old `main` branch fails with `Missing script: db:migrate:remote`; retrying that same commit does not deploy the redesign. Push a new commit to `cloudflare-redesign` after saving the branch setting to start the correct build. After the pull request is reviewed and merged, you can switch the production branch to `main`.
+
+Keep preview builds off during the initial production setup. Under **Git repository → Manage**, confirm the **Cloudflare Workers and Pages** GitHub installation can access `dandemaverick/danonews`, preserving any other repositories already selected. A Git-account connection warning should be investigated if a new commit does not start a build. Successful repository access and a production-branch build are separate checks.
 
 Use the repository root, Node 22.13 or newer, install command `pnpm install --frozen-lockfile`, build command `pnpm run build`, and deploy command `pnpm run db:migrate:remote && pnpm run deploy`. The deployment API token needs **Account → D1 → Edit** for the migration, in addition to the Workers and R2 permissions. Preserve the project's pinned package manager and lockfile. Do not set a Pages output directory.
 
@@ -94,5 +96,7 @@ Official references:
 - https://developers.cloudflare.com/workers/vite-plugin/
 - https://developers.cloudflare.com/workers/configuration/secrets/
 - https://developers.cloudflare.com/workers/wrangler/configuration/
+- https://developers.cloudflare.com/workers/ci-cd/builds/build-branches/
+- https://developers.cloudflare.com/workers/ci-cd/builds/git-integration/github-integration/
 - https://developers.cloudflare.com/d1/wrangler-commands/
 - https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/

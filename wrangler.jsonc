@@ -6,6 +6,10 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "keep_vars": true,
+  "routes": [
+    {"pattern": "danonews.com", "custom_domain": true},
+    {"pattern": "www.danonews.com", "custom_domain": true}
+  ],
   "d1_databases": [{
     "binding": "DB",
     "database_name": "danonews-db",

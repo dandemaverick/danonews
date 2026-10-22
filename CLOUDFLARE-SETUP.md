@@ -63,7 +63,9 @@ Wrangler prints your deployed URL. Public reading works on the workers.dev URL; 
 
 ## 4. Connect danonews.com
 
-In the Worker’s Cloudflare dashboard, open **Settings → Domains & Routes → Add → Custom Domain**. Add `danonews.com` and, if desired, `www.danonews.com`. Check any existing DNS records and hosting before confirming the domain change. Configure Access for every hostname on which you intend to use the newsroom. Use one canonical hostname for administration.
+The Wrangler configuration manages `danonews.com` and `www.danonews.com` as custom domains for this Worker. Deploying attaches both hostnames and creates their DNS records and certificates. In a non-interactive build, Wrangler replaces conflicting website DNS records for these exact hostnames; review existing hosting before deploying this configuration into another account.
+
+The Worker redirects `www.danonews.com` to `https://danonews.com` with status 308, preserving the path and query string. Configure the newsroom's Cloudflare Access paths on `danonews.com` and use that canonical hostname for administration. The dashboard also exposes the domain configuration under the Worker's **Domains** tab.
 
 Open `/admin` on the protected hostname. Cloudflare Access handles sign-in. After login, the newsroom opens automatically; there is no first-user activation or public registration endpoint.
 
@@ -90,7 +92,7 @@ Automatic news checks occur on page load and every five minutes while the page i
 
 ## Remaining deployment work
 
-The D1 database, R2 bucket, and Access application have been created in the owner's account. Remote database migrations, the first Worker deployment, runtime secret configuration, custom-domain routing, and live administrator verification are still pending. No existing live site has been replaced. Legacy Supabase article migration requires a separate export/import step.
+The Worker is deployed with D1 migrations applied and R2 bound. Runtime administrator settings are configured. The public site and all six news categories have been verified on `danonews.com`, and `/admin` redirects to Cloudflare Access. Complete a live administrator sign-in, image upload, and draft/publish check. Legacy Supabase article migration requires a separate export/import step.
 
 Official references:
 - https://developers.cloudflare.com/workers/vite-plugin/

@@ -1,3 +1,4 @@
+import PageSEO from '../../components/PageSEO';
 import {getInitialNews} from '../../lib/news';
 import {getMonetization} from '../../lib/monetization';
 import Newsroom,{Header,Footer} from '../../components/Newsroom';
@@ -18,7 +19,7 @@ export default async function Page({params}:{params:Promise<{section:string}>}) 
   const categories:Record<string,string>={ghana:'Ghana',politics:'Politics',sports:'Sports',entertainment:'Entertainment',business:'Business',world:'World',videos:'Videos',bookmarks:'Bookmarks'};
   if(categories[section]) {
     const [articles,settings]=await Promise.all([section==='bookmarks'?Promise.resolve([]):getInitialNews(),getMonetization()]);
-    return <Newsroom section={categories[section]} initialArticles={articles} placements={!['bookmarks','videos'].includes(section)?<><SponsorPlacement settings={settings}/><ReaderSupport settings={settings}/></>:null}/>;
+    return <>{!['bookmarks','videos'].includes(section)&&<PageSEO title={categories[section]+' News | DanoNews'} description={'Latest '+categories[section].toLowerCase()+' news, reports and developments from DanoNews.'} path={'/'+section}/>}<Newsroom section={categories[section]} initialArticles={articles} placements={!['bookmarks','videos'].includes(section)?<><SponsorPlacement settings={settings}/><ReaderSupport settings={settings}/></>:null}/></>;
   }
   if(section==='admin-login') return <><Header/><main className="container prose-page"><h1>Newsroom login</h1><p>Sign in securely to manage your articles.</p><a className="primary" href="/admin" target="_top">Sign in to the newsroom</a></main><Footer/></>;
   if(section==='contact') {

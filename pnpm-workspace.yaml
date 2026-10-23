@@ -1,0 +1,12 @@
+# Keep this override aligned with pnpm-lock.yaml for frozen CI installs.
+overrides:
+  miniflare>sharp: 0.35.4
+
+# Permit the native tools already required by the pinned build dependencies.
+strictDepBuilds: true
+allowBuilds:
+  esbuild: true
+  fsevents: true
+  sharp: true
+  unrs-resolver: true
+  workerd: true

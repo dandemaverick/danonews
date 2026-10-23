@@ -1,17 +1,22 @@
 import handler from 'vinext/server/fetch-handler';
-
+import {getFeeds} from '../lib/news';
 export default {
-  fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext) {
-    const url = new URL(request.url);
-
-    // Keep readers and the Access-protected newsroom on one hostname.
-    if (url.hostname === 'www.danonews.com') {
-      url.hostname = 'danonews.com';
-      url.protocol = 'https:';
-      url.port = '';
-      return Response.redirect(url.toString(), 308);
+  async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext) {
+    const url=new URL(request.url);
+    if(url.hostname==='www.danonews.com') {
+      url.hostname='danonews.com';url.protocol='https:';url.port='';
+      return new Response(null,{status:308,headers:{Location:url.toString(),'Cache-Control':'no-store'}});
     }
-
-    return handler.fetch(request, env, ctx);
+    const response = await handler.fetch(request,env,ctx);
+    if (response.headers.get('Content-Type')?.includes('text/html')) {
+      const headers=new Headers(response.headers);
+      headers.set('Cache-Control','no-store');
+      headers.set('X-DanoNews-Release','reader-revenue-1');
+      return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+    }
+    return response;
   },
+  async scheduled(_controller: ScheduledController, _env: Cloudflare.Env, ctx: ExecutionContext) {
+    ctx.waitUntil(getFeeds());
+  }
 };

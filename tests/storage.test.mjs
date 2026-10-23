@@ -1,0 +1,23 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import fs from 'node:fs';
+import {stripTypeScriptTypes} from 'node:module';
+test('migrations preserve existing articles and archive briefs across refreshes',async()=>{
+  const db=new DatabaseSync(':memory:');
+  db.exec(fs.readFileSync(new URL('../drizzle/0000_groovy_the_enforcers.sql',import.meta.url),'utf8'));
+  db.exec("INSERT INTO articles(id,slug,title,category,published_at,updated_at) VALUES('existing','existing','Existing article','Ghana','2026-10-22','2026-10-22')");
+  db.exec(fs.readFileSync(new URL('../drizzle/0001_reader_and_monetization.sql',import.meta.url),'utf8'));
+  assert.equal(db.prepare("SELECT ad_eligible FROM articles WHERE id='existing'").get().ad_eligible,0);
+  globalThis.__storageTest={env:{DB:{prepare(sql){return{bind(...args){return{run:async()=>db.prepare(sql).run(...args),first:async()=>db.prepare(sql).get(...args)}}}}}},snapshot:{feeds:[]},feeds:[],parseFeed(){},normalizeFeedArticle:a=>a};
+  let code=fs.readFileSync(new URL('../lib/news.ts',import.meta.url),'utf8').replace(/^import .*;$/gm,'').replace(/^export \{.*\} from .*;$/gm,'');
+  code='const {env,snapshot,feeds,parseFeed,normalizeFeedArticle}=globalThis.__storageTest;\n'+code;
+  const news=await import('data:text/javascript;base64,'+Buffer.from(stripTypeScriptTypes(code)).toString('base64'));
+  const brief={id:'feed-0123456789abcdef',url:'https://onuaonline.com/archived',title:'Original title',description:'Summary',publishedAt:'2026-10-23T10:00:00Z'};
+  await news.archiveFeedArticles([brief]);await news.archiveFeedArticles([{...brief,title:'Updated title'}]);
+  await news.archiveFeedArticles([brief],true);
+  assert.equal(db.prepare('SELECT count(*) AS n FROM feed_articles').get().n,1);
+  assert.equal((await news.getFeedArticle(brief.id)).title,'Updated title');
+  assert.equal(db.prepare('SELECT count(*) AS n FROM articles').get().n,1);
+  db.close();
+});

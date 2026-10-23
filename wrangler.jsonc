@@ -3,18 +3,38 @@
   "name": "danonews",
   "main": "worker/index.ts",
   "compatibility_date": "2026-05-15",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "workers_dev": true,
   "keep_vars": true,
   "routes": [
-    {"pattern": "danonews.com", "custom_domain": true},
-    {"pattern": "www.danonews.com", "custom_domain": true}
+    {
+      "pattern": "danonews.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.danonews.com",
+      "custom_domain": true
+    }
   ],
-  "d1_databases": [{
-    "binding": "DB",
-    "database_name": "danonews-db",
-    "database_id": "c988c152-0fd9-4ccd-bc12-be9f8a86fbac",
-    "migrations_dir": "drizzle"
-  }],
-  "r2_buckets": [{"binding": "BUCKET", "bucket_name": "danonews-images"}]
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "danonews-db",
+      "database_id": "c988c152-0fd9-4ccd-bc12-be9f8a86fbac",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "danonews-images"
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "*/15 * * * *"
+    ]
+  }
 }

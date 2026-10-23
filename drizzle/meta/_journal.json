@@ -15,6 +15,13 @@
       "when": 1792756800000,
       "tag": "0001_reader_and_monetization",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792778400000,
+      "tag": "0002_adsense_publisher",
+      "breakpoints": true
     }
   ]
 }

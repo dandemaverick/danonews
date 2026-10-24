@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {stripTypeScriptTypes} from 'node:module';
+let signed=false,job=null,writes=0;
+globalThis.__queue={env:{DB:{prepare(sql){return {bind(){return this},first:async()=>job,run:async()=>{writes++}}},batch:async statements=>{writes+=statements.length}}},adminUser:async()=>signed,sameOrigin:r=>r.headers.get('origin')==='https://test.local'};
+const code='const {env,adminUser,sameOrigin}=globalThis.__queue;\n'+fs.readFileSync(new URL('../app/api/posts/queue/route.ts',import.meta.url),'utf8').replace(/^import .*;$/gm,'');
+const route=await import('data:text/javascript;base64,'+Buffer.from(stripTypeScriptTypes(code)).toString('base64'));
+const req=(action='publish',origin='https://test.local')=>new Request('https://test.local/api/posts/queue',{method:'POST',headers:{origin},body:JSON.stringify({id:'feed-0000000000000001',action})});
+test('queue and publication require admin and same origin',async()=>{assert.equal((await route.GET(new Request('https://test.local'))).status,401);assert.equal((await route.POST(req())).status,403);signed=true;assert.equal((await route.POST(req('publish','https://evil.example'))).status,403);assert.equal(writes,0)});
+test('queued headlines and missing stories cannot publish',async()=>{assert.equal((await route.POST(req())).status,404);job={id:'feed-0000000000000001',status:'queued'};assert.equal((await route.POST(req())).status,409);assert.equal(writes,0)});
+test('complete draft publication updates article and job together',async()=>{job={article_id:'auto-feed-0000000000000001',body:'A complete reviewed article with enough supporting detail.',article_status:'draft',slug:'reviewed-story'};const r=await route.POST(req());assert.equal(r.status,200);assert.equal((await r.json()).url,'/article/reviewed-story');assert.equal(writes,2)});
+test('prioritization does not run while automation is paused or unconfigured',async()=>{job={status:'queued'};assert.equal((await route.POST(req('prioritize'))).status,409);assert.equal(writes,2)});

@@ -1,3 +1,4 @@
+import PublishAutomatedStory from '../../../../../components/PublishAutomatedStory';
 import {env} from 'cloudflare:workers';
 import {notFound} from 'next/navigation';
 import {adminUser} from '../../../../../lib/admin';
@@ -8,5 +9,5 @@ export default async function Story({params}:{params:Promise<{id:string}>}) {
  const {id}=await params;
  const a=await env.DB!.prepare('SELECT a.* FROM articles a WHERE a.id=? AND EXISTS(SELECT 1 FROM news_jobs j WHERE j.article_id=a.id)').bind(id).first<any>();
  if(!a)notFound();
- return <main className="container article-page"><a href="/admin/automation/stories">← Automated stories</a><p className="notice">{a.status==='published'?'Published article':'Private draft — visible only to administrators'}</p><span className="category">{a.category}</span><h1>{a.title}</h1><p className="intro">{a.description}</p><div className="button-row"><a className="primary" href={'/admin?article='+encodeURIComponent(a.id)}>Edit / review</a>{a.status==='published'&&<a className="secondary" href={'/article/'+encodeURIComponent(a.slug)} target="_blank" rel="noopener noreferrer">View live ↗</a>}</div><ResearchedBody id={a.id} body={a.body}/></main>;
+ return <main className="container article-page"><a href="/admin/automation/stories">← Automated stories</a><p className="notice">{a.status==='published'?'Published article':'Private draft — visible only to administrators'}</p><span className="category">{a.category}</span><h1>{a.title}</h1><p className="intro">{a.description}</p><div className="button-row">{a.status==='draft'&&<PublishAutomatedStory jobId={a.id.replace(/^auto-/,'')}/>}<a className="primary" href={'/admin?article='+encodeURIComponent(a.id)}>Edit / review</a>{a.status==='published'&&<a className="secondary" href={'/article/'+encodeURIComponent(a.slug)} target="_blank" rel="noopener noreferrer">View live ↗</a>}</div><ResearchedBody id={a.id} body={a.body}/></main>;
 }

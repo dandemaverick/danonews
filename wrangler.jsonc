@@ -8,6 +8,7 @@
   ],
   "workers_dev": true,
   "keep_vars": true,
+  "ai": {"binding": "AI"},
   "routes": [
     {
       "pattern": "danonews.com",

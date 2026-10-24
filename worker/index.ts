@@ -1,5 +1,6 @@
 import handler from 'vinext/server/fetch-handler';
 import {getFeeds} from '../lib/news';
+import {runAutoNews} from '../lib/auto-news';
 export default {
   async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext) {
     const url=new URL(request.url);
@@ -17,6 +18,6 @@ export default {
     return response;
   },
   async scheduled(_controller: ScheduledController, _env: Cloudflare.Env, ctx: ExecutionContext) {
-    ctx.waitUntil(getFeeds());
+    ctx.waitUntil(getFeeds().then(result=>runAutoNews(result.articles)).catch(error=>console.error('Scheduled news job failed',String(error))));
   }
 };

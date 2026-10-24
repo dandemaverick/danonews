@@ -1,10 +1,14 @@
-import {notFound} from 'next/navigation';
+import {notFound,redirect} from 'next/navigation';
+import {env} from 'cloudflare:workers';
 import {Header,Footer,Photo,Meta,StoryLink} from '../../../components/Newsroom';
 import {getFeedArticle,getInitialNews,articlePath} from '../../../lib/news';
 export const dynamic = 'force-dynamic';
 export default async function Page({params}:{params:Promise<{id:string}>}) {
   const {id} = await params, article = await getFeedArticle(id);
   if (!article) notFound();
+  let full:{slug:string}|null=null;
+  try{full=await env.DB!.prepare("SELECT a.slug FROM articles a JOIN news_jobs j ON j.article_id=a.id WHERE j.id=? AND a.status='published'").bind(id).first<{slug:string}>();}catch{}
+  if(full)redirect('/article/'+encodeURIComponent(full.slug));
   const related = (await getInitialNews()).filter(a=>a.category===article.category && a.id!==id).slice(0,3);
   return <><Header active={article.category}/><main className="container brief-page"><article>
     <div className="reader-breadcrumb"><a href="/">Home</a><span>/</span><a href={'/'+article.category.toLowerCase()}>{article.category}</a><span>/</span>News brief</div>

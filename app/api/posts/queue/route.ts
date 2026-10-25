@@ -11,10 +11,22 @@ export async function GET(req:Request){
 export async function POST(req:Request){
  if(!sameOrigin(req)||!await adminUser())return new Response('Forbidden',{status:403});
  let input:any;try{input=await req.json()}catch{return new Response('Invalid JSON',{status:400})}
- if(!input||typeof input.id!=='string'||!/^feed-[a-f0-9]{16}$/.test(input.id)||!['prioritize','publish'].includes(input.action))return new Response('Invalid action',{status:400});
+ if(!input||typeof input.id!=='string'||!/^feed-[a-f0-9]{16}$/.test(input.id)||!['prioritize','publish','draft'].includes(input.action))return new Response('Invalid action',{status:400});
  const job=await env.DB!.prepare('SELECT j.*,a.slug,a.body,a.status article_status FROM news_jobs j LEFT JOIN articles a ON a.id=j.article_id WHERE j.id=?').bind(input.id).first<any>();
  if(!job)return new Response('Story not found',{status:404});
  const now=new Date().toISOString();
+ if(input.action==='draft'){
+  if(job.article_status)return Response.json({url:'/admin?article='+encodeURIComponent(job.article_id)});
+  if(!['queued','review'].includes(job.status))return new Response('Research is in progress. Wait for it to finish before editing.',{status:409});
+  const seed=JSON.parse(job.seed),id='auto-'+job.id;
+  await env.DB!.batch([
+   env.DB!.prepare("INSERT OR IGNORE INTO articles(id,slug,title,description,body,category,image,image_alt,credit,author,status,published_at,updated_at,featured,ad_eligible) SELECT ?,?,?,?,'',?,'','','','DanoNews News Desk','draft',?,?,0,0 FROM news_jobs WHERE id=? AND status IN ('queued','review') AND article_id IS NULL").bind(id,id,seed.title,'',seed.category,now,now,job.id),
+   env.DB!.prepare("UPDATE news_jobs SET article_id=?,status='review',reason='Manual draft opened. Write and verify the article before publishing.',updated_at=? WHERE id=? AND status IN ('queued','review') AND article_id IS NULL AND EXISTS(SELECT 1 FROM articles WHERE id=?)").bind(id,now,job.id,id)
+  ]);
+  const linked=await env.DB!.prepare('SELECT article_id FROM news_jobs WHERE id=?').bind(job.id).first<any>();
+  if(!linked?.article_id)return new Response('Story changed while opening. Refresh the queue and try again.',{status:409});
+  return Response.json({url:'/admin?article='+encodeURIComponent(linked.article_id)});
+ }
  if(input.action==='prioritize'){
   const settings=await env.DB!.prepare("SELECT value FROM site_settings WHERE key='auto_news_enabled'").first<{value:string}>();
   if(settings?.value!=='1'||!env.OPENAI_API_KEY)return new Response('Configure and enable automatic research first.',{status:409});

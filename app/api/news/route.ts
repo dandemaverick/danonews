@@ -1,2 +1,2 @@
 import {getFeeds,getPublished} from '../../../lib/news';
-export async function GET(){try{const [feeds,local]=await Promise.all([getFeeds(),getPublished()]);return Response.json({articles:[...local,...feeds.articles],unavailable:feeds.unavailable,checkedAt:new Date().toISOString()},{headers:{'Cache-Control':'no-store'}})}catch{return Response.json({error:'The newsroom is temporarily unavailable. Please try again.'},{status:503})}}
+export async function GET(){try{const [feeds,local]=await Promise.all([getFeeds(),getPublished()]);return Response.json({articles:[...local,...feeds.articles],checkedAt:new Date().toISOString()},{headers:{'Cache-Control':'no-store'}})}catch{return Response.json({error:'The newsroom is temporarily unavailable. Please try again.'},{status:503})}}

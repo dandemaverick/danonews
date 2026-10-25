@@ -55,7 +55,8 @@ export async function getFeeds() {
     unavailable:[...new Set(results.filter(r=>r.stale).map(r=>r.source))]};
 }
 export function rowArticle(r: any): Article {
-  return {...r,source:'DanoNews',publishedAt:r.published_at,imageAlt:r.image_alt,adEligible:r.ad_eligible || 0,external:false};
+  let images=[];try{images=JSON.parse(r.images||'[]');if(!Array.isArray(images))images=[];}catch{}
+  return {...r,images,source:'DanoNews',publishedAt:r.published_at,imageAlt:r.image_alt,adEligible:r.ad_eligible || 0,external:false};
 }
 export async function getPublished() {
   const result = await env.DB!.prepare("SELECT * FROM articles WHERE status='published' ORDER BY featured DESC,published_at DESC LIMIT 200").all();

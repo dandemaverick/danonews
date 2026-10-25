@@ -1,10 +1,12 @@
 export const categories = ['Ghana', 'Politics', 'Sports', 'Entertainment', 'Business', 'World'];
 
+export type ArticleImage = {url:string;alt:string;caption:string;credit:string};
+
 export type Article = {
   id: string; slug: string; title: string; description: string; body?: string;
   category: string; image: string; imageAlt?: string; credit?: string; author?: string;
   source: string; url?: string; publishedAt: string; status?: string; featured?: number;
-  external?: boolean; adEligible?: number;
+  images?: ArticleImage[]; external?: boolean; adEligible?: number;
 };
 
 export function slugify(value: string) {

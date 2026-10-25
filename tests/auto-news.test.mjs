@@ -37,3 +37,14 @@ test('quota blocks provider calls and sensitive research remains a draft',async(
  db.prepare('UPDATE news_daily_usage SET attempts=4').run();const before=calls;
  await pipeline.runAutoNews([{...seed,id:'feed-0000000000000004'}]);assert.equal(calls,before);assert.equal(db.prepare('SELECT status FROM news_jobs WHERE id=?').get('feed-0000000000000004').status,'queued');globalThis.fetch=originalFetch;
 });
+test('requested research works while paused, fills empty drafts and stays private',async()=>{
+ db.prepare("UPDATE site_settings SET value='0' WHERE key='auto_news_enabled'").run();db.prepare('UPDATE news_daily_usage SET attempts=0').run();
+ const id='feed-0000000000000005',articleId='auto-'+id;
+ db.prepare('INSERT INTO news_jobs(id,seed,status,article_id,created_at,updated_at) VALUES(?,?,?,?,?,?)').run(id,JSON.stringify({...seed,id}),'review',articleId,'now','now');
+ db.prepare("INSERT INTO articles(id,slug,title,category,status,published_at,updated_at) VALUES(?,?,?,'Entertainment','draft','now','now')").run(articleId,articleId,seed.title);
+ globalThis.fetch=async()=>Response.json(research({eventKey:'requested-arts-festival'}));
+ try{await pipeline.runAutoNews([],id);const article=db.prepare('SELECT * FROM articles WHERE id=?').get(articleId);assert.equal(article.status,'draft');assert.ok(article.body.split(/\s+/).length>=300);assert.equal(db.prepare('SELECT status FROM news_jobs WHERE id=?').get(id).status,'review');await assert.rejects(()=>pipeline.runAutoNews([],id),/already/);}finally{globalThis.fetch=originalFetch;}
+});
+test('requested research reports provider failures without publishing a headline',async()=>{
+ const id='feed-0000000000000006';db.prepare('INSERT INTO news_jobs(id,seed,created_at,updated_at) VALUES(?,?,?,?)').run(id,JSON.stringify({...seed,id}),'now','now');globalThis.fetch=async()=>new Response('',{status:401});try{await assert.rejects(()=>pipeline.runAutoNews([],id),/HTTP 401/);const job=db.prepare('SELECT * FROM news_jobs WHERE id=?').get(id);assert.equal(job.status,'review');assert.equal(job.article_id,null);}finally{globalThis.fetch=originalFetch;}
+});

@@ -1,3 +1,4 @@
+import {runAutoNews} from '../../../../lib/auto-news';
 import {env} from 'cloudflare:workers';
 import {adminUser,sameOrigin} from '../../../../lib/admin';
 export async function GET(req:Request){
@@ -5,16 +6,22 @@ export async function GET(req:Request){
  const p=new URL(req.url).searchParams,status=['queued','researching','review','published'].includes(p.get('status')||'')?p.get('status')!:'queued',q=(p.get('q')||'').slice(0,200),page=Math.min(10000,Math.max(1,parseInt(p.get('page')||'1',10)||1));
  const where="j.status=? AND instr(lower(json_extract(j.seed,'$.title')),lower(?))>0";
  const count=await env.DB!.prepare('SELECT count(*) total FROM news_jobs j WHERE '+where).bind(status,q).first<{total:number}>();
- const rows=await env.DB!.prepare('SELECT j.id,j.seed,j.status,j.reason,j.article_id,a.slug,a.status article_status FROM news_jobs j LEFT JOIN articles a ON a.id=j.article_id WHERE '+where+' ORDER BY j.created_at,j.id LIMIT 20 OFFSET ?').bind(status,q,(page-1)*20).all<any>();
+ const rows=await env.DB!.prepare('SELECT j.id,j.seed,j.status,j.reason,j.article_id,a.slug,a.body,a.status article_status FROM news_jobs j LEFT JOIN articles a ON a.id=j.article_id WHERE '+where+' ORDER BY j.created_at,j.id LIMIT 20 OFFSET ?').bind(status,q,(page-1)*20).all<any>();
  return Response.json({jobs:rows.results.map(r=>({...r,seed:JSON.parse(r.seed)})),total:count?.total||0,page},{headers:{'Cache-Control':'no-store'}});
 }
 export async function POST(req:Request){
  if(!sameOrigin(req)||!await adminUser())return new Response('Forbidden',{status:403});
  let input:any;try{input=await req.json()}catch{return new Response('Invalid JSON',{status:400})}
- if(!input||typeof input.id!=='string'||!/^feed-[a-f0-9]{16}$/.test(input.id)||!['prioritize','publish','draft'].includes(input.action))return new Response('Invalid action',{status:400});
+ if(!input||typeof input.id!=='string'||!/^feed-[a-f0-9]{16}$/.test(input.id)||!['prioritize','publish','draft','research'].includes(input.action))return new Response('Invalid action',{status:400});
  const job=await env.DB!.prepare('SELECT j.*,a.slug,a.body,a.status article_status FROM news_jobs j LEFT JOIN articles a ON a.id=j.article_id WHERE j.id=?').bind(input.id).first<any>();
  if(!job)return new Response('Story not found',{status:404});
  const now=new Date().toISOString();
+ if(input.action==='research'){
+  try{await runAutoNews([],input.id);}catch(e){return new Response((e as Error).message,{status:409});}
+  const result=await env.DB!.prepare('SELECT article_id FROM news_jobs WHERE id=?').bind(input.id).first<any>();
+  if(!result?.article_id)return new Response('Research did not produce a complete article. Check the story details and try again.',{status:409});
+  return Response.json({url:'/admin/automation/stories/'+encodeURIComponent(result.article_id)});
+ }
  if(input.action==='draft'){
   if(job.article_status)return Response.json({url:'/admin?article='+encodeURIComponent(job.article_id)});
   if(!['queued','review'].includes(job.status))return new Response('Research is in progress. Wait for it to finish before editing.',{status:409});

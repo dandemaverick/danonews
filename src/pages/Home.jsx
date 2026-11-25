@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getNews } from "../services/newsApi";
 
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+
 export default function Home() {
 
   const [articles, setArticles] = useState([]);
@@ -11,101 +13,33 @@ export default function Home() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let active = true;
+    let refreshTimer;
 
     const loadNews = async () => {
+      const data = await getNews("general");
+      if (!active) return;
 
-      try {
-
-        setLoading(true);
-
-        const data = await getNews("general");
-
-        if (data && data.length > 0) {
-
-          // PRIORITIZE GHANA NEWS
-          const ghanaFirst = [...data].sort((a, b) => {
-
-            const aGhana =
-              a.title?.toLowerCase().includes("ghana") ||
-              a.description?.toLowerCase().includes("ghana");
-
-            const bGhana =
-              b.title?.toLowerCase().includes("ghana") ||
-              b.description?.toLowerCase().includes("ghana");
-
-            return bGhana - aGhana;
-          });
-
-          setArticles(ghanaFirst);
-
-        } else {
-
-          setArticles(getDemoArticles());
-
-        }
-
-      } catch (err) {
-
-        console.warn(
-          "Using demo data due to error:",
-          err.message
+      if (data.length > 0) {
+        const latestFirst = [...data].sort(
+          (a, b) =>
+            (Date.parse(b.publishedAt) || 0) -
+            (Date.parse(a.publishedAt) || 0)
         );
-
-        setArticles(getDemoArticles());
-
-      } finally {
-
-        setLoading(false);
-
+        setArticles(latestFirst);
       }
+
+      setLoading(false);
+      refreshTimer = window.setTimeout(loadNews, REFRESH_INTERVAL_MS);
     };
 
     loadNews();
 
+    return () => {
+      active = false;
+      window.clearTimeout(refreshTimer);
+    };
   }, []);
-
-  /* =========================
-     DEMO FALLBACK ARTICLES
-  ========================= */
-
-  const getDemoArticles = () => [
-
-    {
-      title: "Mahama Unveils Bold 24-Hour Economy Policy",
-      description:
-        "President John Dramani Mahama introduces comprehensive plan to transform Ghana’s economy.",
-      image:
-        "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?q=80&w=1200&auto=format&fit=crop",
-    },
-
-    {
-      title:
-        "Black Stars Squad Announced for World Cup Qualifiers",
-      description:
-        "Otto Addo names strong 26-man squad ahead of crucial matches.",
-      image:
-        "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
-    },
-
-    {
-      title:
-        "Ghana Cedi Gains 2.3% Against US Dollar",
-      description:
-        "Local currency shows strong performance in forex market.",
-      image:
-        "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?q=80&w=1200&auto=format&fit=crop",
-    },
-
-    {
-      title:
-        "Fuel Prices Expected to Drop by 8% Next Month",
-      description:
-        "Good news for motorists as global oil prices stabilize.",
-      image:
-        "https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=1200&auto=format&fit=crop",
-    },
-
-  ];
 
   /* =========================
      IMAGE FALLBACKS
@@ -154,6 +88,10 @@ export default function Home() {
         Loading DanoNews...
       </div>
     );
+  }
+
+  if (!articles.length) {
+    return <div className="container">News is temporarily unavailable. Retrying automatically.</div>;
   }
 
   const hero = articles[0];
